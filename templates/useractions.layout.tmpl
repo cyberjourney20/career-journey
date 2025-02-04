@@ -1,0 +1,106 @@
+{{define "useractions"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="/static/css/themify-icons.css">
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/images/favicon.png">
+  <style>
+  .notie-container {
+    z-index: 50;
+  }
+</style>
+  <title>Career Journey</title>
+{{block "css" .}}
+{{end}}
+</head>
+<body>
+<div class="container-scroller">
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+        <div class="content-wrapper d-flex align-items-stretch auth auth-img-bg">
+            <div class="row flex-grow">
+                <div class="col-lg-6 d-flex align-items-center justify-content-center">
+                    {{block "content" .}}
+                    {{end}}	
+                </div>
+                <div class="col-lg-6 login-half-bg d-flex flex-row">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- plugins:js -->
+<script src="/static/js/notie.js"></script>
+<script src="/static/js/notifications.js"></script>
+<script src="/static/js/vendor.bundle.base.js"></script>
+<script src="/static/js/off-canvas.js"></script>
+<script src="/static/js/hoverable-collapse.js"></script>
+<script src="/static/js/template.js"></script>
+<script src="/static/js/todolist.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let attention = Prompt();
+
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            let forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+
+
+    function notify(msg, msgType) {
+        notie.alert({
+            type: msgType,
+            text: msg,
+        })
+    }
+
+    function notifyModal(title, text, icon, confirmationButtonText) {
+        Swal.fire({
+            title: title,
+            html: text,
+            icon: icon,
+            confirmButtonText: confirmationButtonText
+        })
+    }
+
+    {{with .Error}}
+    notify("{{.}}", "error")
+    {{end}}
+
+    {{with .Flash}}
+    notify("{{.}}", "success")
+    {{end}}
+
+    {{with .Warning}}
+    notify("{{.}}", "warning")
+    {{end}}
+</script>
+
+
+
+{{block "js" .}}
+{{end}}	
+
+</body>
+</html>
+{{end}}

@@ -1,0 +1,22 @@
+create_table("job_listings") {
+  t.Column("id", "integer", {primary: true})
+  t.Column("user_id", "uuid", {})
+  t.Column("external_job_id", "string", {"default": ""})
+  t.Column("company_id", "integer", {}) 
+  t.Column("url", "string", {"default": ""})
+  t.Column("job_title", "string", {"default": ""})
+  t.Column("job_description", "string", {"default": ""})
+  t.Column("work_setting", "integer", {"default": 0}) 
+  t.Column("req_yoe", "int", {"default": 0})
+  t.Column("req_skills", "jsonb", {"default": "{}"})
+  t.Column("req_certs", "jsonb", {"default": "{}"})
+  t.Column("low_pay", "money", {})
+  t.Column("target_pay", "money", {})
+  t.Column("high_pay", "money", {})
+  t.Column("location_city", "string", {"default": ""})
+  t.Column("location_state", "string", {"default": ""})
+  t.Column("location_zip", "string", {"default": ""})
+  t.Column("date_posted", "date", {})
+  t.Column("date_closing", "date", {})
+
+}

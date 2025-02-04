@@ -1,0 +1,10 @@
+create_table("applications") {
+  t.Column("id", "integer", {primary: true})
+  t.Column("user_id", "uuid", {})
+  t.Column("company_id", "integer", {})
+  t.Column("job_id", "integer", {})
+  t.Column("app_status", "string", {"default": ""})
+  t.Column("notes", "string", {"default": ""})
+  t.Column("timeline", "jsonb", {"default": "{}"}) 
+  t.Column("contact_id", "int", {"default": 0, "null": true})
+}

@@ -1,0 +1,12 @@
+create_table("users") {
+  
+  t.Column("user_id", "uuid", {primary: true, "default_raw": "uuid_generate_v4()"})
+  t.Column("first_name", "string", {"default": ""})
+  t.Column("last_name", "string", {"default": ""})
+  t.Column("email", "string", {"default": ""})
+  t.Column("password", "string", {"size": 60})
+  t.Column("skills", "jsonb",{"default": "{}"})
+  t.Column("certs", "jsonb", {"default": "{}"})
+  t.Column("preferences", "jsonb", {"default": "{}"})
+  t.Column("access_level", "integer", {"default": 0})
+}

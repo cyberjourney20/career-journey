@@ -1,0 +1,8 @@
+create_table("companies") {
+  t.Column("id", "integer", {primary: true})
+  t.Column("company_name", "string", {"default": ""})
+  t.Column("url", "string", {"default": ""})
+  t.Column("address", "string", {"default": ""})
+  t.Column("industry", "string", {"default": ""})
+  t.Column("size", "string", {"default": ""})
+}

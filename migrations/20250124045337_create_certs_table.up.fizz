@@ -1,0 +1,8 @@
+create_table("certs") {
+  t.Column("id", "integer", {primary: true})
+  t.Column("cert_body", "string", {"default": ""}) 
+  t.Column("url", "string", {"default": ""})
+  t.Column("title", "string", {"default": ""})
+  t.Column("cost", "int", {"default": 0})
+  t.Column("description", "string", {"default": ""})
+}

@@ -1,0 +1,217 @@
+{{template "base" .}}
+
+{{define "page-title"}}
+Dashboard
+{{end}}
+{{define "css"}}
+<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+<style>
+td {
+  word-break: break-all;
+  white-space: normal;
+}
+</style>
+{{end}}
+
+{{define "content"}}
+<input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+<div class="row">
+<div class="col-lg-12 grid-margin stretch-card container-fluid">
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <h4 class="col-lg-10 display-4 float-left">Favorite Contacts</h4>
+        <button type="button" class="text-truncate col-lg-1 btn btn-outline-dark btn-fw float-sm-right" style="width: 6rem;" 
+        onclick="location.href='#'">New</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover" id="fav-contacts">
+          {{$cts := index .Data "contacts"}}
+          <thead>
+            <tr>
+              <th>Favorite</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Company</th>
+              <th>Job Title </th>
+              <th>Objective</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {{range $cts}}
+            <tr>
+              {{if .Favorite}}
+              <td><i class="ti-star"></i></td>
+              {{else}}
+              <td><i></i></td>
+              {{end}}
+              <td>{{.FirstName}}</td>
+              <td>{{.LastName}}</td>
+              <td>{{.Company.CompanyName}}</td>
+              <td>{{.JobTitle}}</td>
+              <td>{{.Objective}}</td>
+              <td type="button" class="btn btn-inverse-primary ti-pencil"  
+              onclick="location.href='/contacts/view/{{.ID}}'"></td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="row">
+  <div class="col-lg-6 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <h4 class="col-lg-10 display-4 float-left">To Do</h4>
+          <button type="button" class="text-truncate col-lg-2 btn btn-outline-dark btn-fw float-sm-right" style="width: 6rem;" 
+        onclick="location.href='#'">Add</button>
+        </div>
+        <table class="table table-hover" id="To Do">
+          <thead>
+            <tr>
+              <th>Priority</th>
+              <th>Name</th>
+              <th>Notes</th>
+              <th>Due Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><i class="ti-angle-up"></i></td>
+              <td><p>Call Steve</p></td>
+              <td><p class="text-truncate" style="width: 8rem;">Follow-up with additional on project.Follow-up with additional on project. Follow-up with additional on project. Follow-up with additional on project.</p></td>
+              <td><p>15/01/2025</p></td>
+              <td type="button" class="btn btn-inverse-primary ti-pencil"  onclick="location.href='#'"></td>
+            </tr>
+            <tr>
+              <td><i class="ti-angle-down"></i></td>
+              <td><p>Research Company X</p></td>
+              <td><p class="text-truncate" style="width: 8rem;">http://companyx.com</p></td>
+              <td><p>15/01/2025</p></td>
+              <td type="button" class="btn btn-inverse-primary ti-pencil"  onclick="location.href='#'"></td>
+            </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+      <h4 class="display-4 float-left">Application Highlights</h4>
+      <p>List of applications summary for applications with recent changes. </p>
+    </div>
+  </div>
+</div>
+</div>
+<div class="row">
+  <div class="col-lg-6 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="display-4 float-left">Test Chart</h4>
+        <div class="chartjs-size-monitor">
+          <div class="chartjs-size-monitor-expand">
+          </div>
+        </div>
+        <canvas id="lineChart" width="810" height="405" style="display: block; width: 810px; height: 405px;" class="chartjs-render-monitor"></canvas>
+      </div>
+  </div>
+</div>
+  <div class="col-lg-6 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="display-4 float-left">Test Chart 2</h4>
+        <div class="chartjs-size-monitor">
+          <div class="chartjs-size-monitor-expand">
+          </div>
+        </div>
+        <canvas id="barChart" width="719" height="359" style="display: block; width: 719px; height: 359px;" class="chartjs-render-monitor"></canvas>
+      </div>
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+{{end}}
+
+{{define "js"}}
+<script src="static/js/table/app.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+  const dataTable = new simpleDatatables.DataTable("#fav-contacts", {
+  })
+  })
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+
+<script>
+fetch("datatable.json").then(
+  response => response.json()
+).then(
+  data => {
+      const datatable = new DataTable("#fav-contacts", {
+          data: {
+              headings: Object.keys(data[0]),
+              data: data.map(item => Object.values(item))
+          },
+          columns: columnData,
+          labels: labelData,
+          type: "string"
+      })
+      // Wait for the instance to finish rendering
+      // and add a new column
+      datatable.on("datatable.init", () => {
+          fetch("datatable.column.json").then(response => response.json())
+              .then(column => {
+                  // Render a button
+                  column.render = (value, _td, rowIndex, _cellIndex) => `${value}%<button type='button' data-id='${rowIndex}' class='btn btn-sm btn-primary pull-right notify'>Click Me</button>`
+                  // the dataIndex property is the correct index of the row in the data array, not the rowIndex
+                  // which will be -1 if not rendered or wrong if the we're not on page 1
+                  datatable.columns.add(column)
+              })
+      })
+      datatable.dom.addEventListener("click", e => {
+          if (e.target.nodeName === "BUTTON" && e.target.hasAttribute("data-id")) {
+              const index = parseInt(e.target.getAttribute("data-id"), 10)
+              const row = datatable.data.data[index].cells
+              let message = [
+                  "This is row ",
+                  (e.target.closest("tr").rowIndex + 1), " of ",
+                  datatable.options.perPage, " rendered rows and row ",
+                  (index + 1), " of ",
+                  datatable.data.length, " total rows."
+              ]
+              const data = [].slice.call(row).map(cell => cell.data)
+              message = message.join("")
+              message = `${message}\n\nThe row data is:\n${JSON.stringify(data)}`
+              alert(message)
+          }
+      })
+  }
+)
+</script>
+{{end}}
+
+<!-- https://fiduswriter.github.io/simple-datatables/demos/5-column-manipulation/ -->
+
+
+  <!-- <script>
+    dataTable.on("datatable.selectrow", (rowIndex, event) => {
+      const row = table.data.data[rowIndex]
+      console.log(row);
+      console.log("Fired selecrow function");
+      event.grabRowData(row);
+  });
+  </script> -->

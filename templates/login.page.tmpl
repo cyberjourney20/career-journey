@@ -1,0 +1,68 @@
+{{template "useractions" .}}
+{{define "css"}}
+
+  {{end}}
+{{define "content"}}
+<div class="auth-form-transparent text-left p-3">
+  <div class="brand-logo">
+    <img src="/static/images/cj_logo_black.png" alt="logo">
+  </div>
+  <h3>Career Journey</h3>
+  
+  <form class="pt-3" method="post" action="/user/login-post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+    <div class="form-group">
+      <label for="InputEmail">Username</label> 
+      {{with .Form.Errors.Get "email"}}
+        <label class="text-danger">{{.}}</label>
+        {{end}}
+      <div class="input-group">
+        <div class="input-group-prepend bg-transparent">
+          <span class="input-group-text bg-transparent border-right-0">
+            <i class="ti-user text-primary"></i>
+          </span>
+        </div>
+        
+        <input type="email" name="email" class="form-control form-control-lg border-left-0 needs-validation" 
+        required autocomplete="off" {{with .Form.Errors.Get "email"}} is-invalid {{end}} id="email" placeholder="Email" value="">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="InputPassword">Password</label>
+      {{with .Form.Errors.Get "password"}}
+        <label class="text-danger">{{.}}</label>
+        {{end}}
+      <div class="input-group">
+        <div class="input-group-prepend bg-transparent">
+          <span class="input-group-text bg-transparent border-right-0">
+            <i class="ti-lock text-primary"></i>
+          </span>
+        </div>
+        
+        <input type="password" name="password" class="form-control form-control-lg border-left-0 needs-validation" 
+        required autocomplete="off" {{with .Form.Errors.Get "password"}} is-invalid {{end}} id="password" placeholder="Password" value="">                        
+      </div>
+    </div>
+    <div class="my-2 d-flex justify-content-between align-items-center">
+      <div class="form-check">
+        <label class="form-check-label text-muted">
+          <input type="checkbox" class="form-check-input">
+          Keep me signed in
+        </label>
+      </div>
+      <a href="#" class="auth-link text-black">Forgot password?</a>
+    </div>
+    <div class="my-3">
+      <input class="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn" type="submit" value="Submit"></input>
+    </div>
+
+    <div class="text-center mt-4 font-weight-light">
+      Don't have an account? <a href="/user/register" class="text-primary">Create</a>
+    </div>
+  </form>
+</div>
+{{end}}
+
+{{define "js"}}
+
+{{end}}
