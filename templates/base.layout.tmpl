@@ -12,6 +12,7 @@
 	<link rel="stylesheet" href="/static/css/style.css">
 	<link rel="shortcut icon" href="/images/favicon.png">
 	<link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
+	
 	<style>
 		.notie-container {
 		  z-index: 5000;
@@ -20,7 +21,6 @@
 {{block "css" .}}
 {{end}}
 </head>
-
 
 <body>
 	<input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
@@ -271,15 +271,16 @@
 	</footer>
 
 <!-- Inject JS -->
-<script src="static/js/base/vendor.bundle.base.js"></script>
-<script src="static/js/chart/Chart.min.js"></script>
-<script src="static/js/chart.js"></script>
-<script src="static/js/jquery.cookie.js" type="text/javascript"></script>
-<script src="static/js/off-canvas.js"></script>
-<script src="static/js/hoverable-collapse.js"></script>
-<script src="static/js/template.js"></script>
-<script src="static/js/todolist.js"></script>
-<script src="static/js/dashboard.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+<script src="/static/js/base/vendor.bundle.base.js"></script>
+<!-- <script src="/static/js/chart/Chart.min.js"></script>
+<script src="/static/js/chart.js"></script>
+<script src="/static/js/jquery.cookie.js" type="text/javascript"></script>
+<script src="/static/js/off-canvas.js"></script> -->
+<!-- <script src="/static/js/hoverable-collapse.js"></script> -->
+<script src="/static/js/template.js"></script>
+<!-- <script src="/static/js/todolist.js"></script> -->
+<script src="/static/js/dashboard.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/static/js/notie.js"></script>
 <script src="/static/js/notifications.js"></script>	
@@ -335,62 +336,54 @@
 	notify("{{.}}", "warning")
 	{{end}}
 </script>
-<script src="static/js/table/app.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-  const dataTable = new simpleDatatables.DataTable("#test-table", {
-  })
-  })
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+<!-- <script>
+	fetch("datatable.json").then(
+	  response => response.json()
+	).then(
+	  data => {
+		  const datatable = new DataTable("#contacts", {
+			  data: {
+				  headings: Object.keys(data[0]),
+				  data: data.map(item => Object.values(item))
+			  },
+			  columns: columnData,
+			  labels: labelData,
+			  type: "string"
+		  })
+		  // Wait for the instance to finish rendering
+		  // and add a new column
+		  datatable.on("datatable.init", () => {
+			  fetch("datatable.column.json").then(response => response.json())
+				  .then(column => {
+					  // Render a button
+					  column.render = (value, _td, rowIndex, _cellIndex) => `${value}%<button type='button' data-id='${rowIndex}' class='btn btn-sm btn-primary pull-right notify'>Click Me</button>`
+					  // the dataIndex property is the correct index of the row in the data array, not the rowIndex
+					  // which will be -1 if not rendered or wrong if the we're not on page 1
+					  datatable.columns.add(column)
+				  })
+		  })
+		  datatable.dom.addEventListener("click", e => {
+			  if (e.target.nodeName === "BUTTON" && e.target.hasAttribute("data-id")) {
+				  const index = parseInt(e.target.getAttribute("data-id"), 10)
+				  const row = datatable.data.data[index].cells
+				  let message = [
+					  "This is row ",
+					  (e.target.closest("tr").rowIndex + 1), " of ",
+					  datatable.options.perPage, " rendered rows and row ",
+					  (index + 1), " of ",
+					  datatable.data.length, " total rows."
+				  ]
+				  const data = [].slice.call(row).map(cell => cell.data)
+				  message = message.join("")
+				  message = `${message}\n\nThe row data is:\n${JSON.stringify(data)}`
+				  alert(message)
+			  }
+		  })
+	  }
+	)
+	</script> -->
 
-<script>
-fetch("datatable.json").then(
-  response => response.json()
-).then(
-  data => {
-      const datatable = new DataTable("#test-table", {
-          data: {
-              headings: Object.keys(data[0]),
-              data: data.map(item => Object.values(item))
-          },
-          columns: columnData,
-          labels: labelData,
-          type: "string"
-      })
-      // Wait for the instance to finish rendering
-      // and add a new column
-      datatable.on("datatable.init", () => {
-          fetch("datatable.column.json").then(response => response.json())
-              .then(column => {
-                  // Render a button
-                  column.render = (value, _td, rowIndex, _cellIndex) => `${value}%<button type='button' data-id='${rowIndex}' class='btn btn-sm btn-primary pull-right notify'>Click Me</button>`
-                  // the dataIndex property is the correct index of the row in the data array, not the rowIndex
-                  // which will be -1 if not rendered or wrong if the we're not on page 1
-                  datatable.columns.add(column)
-              })
-      })
-      datatable.dom.addEventListener("click", e => {
-          if (e.target.nodeName === "BUTTON" && e.target.hasAttribute("data-id")) {
-              const index = parseInt(e.target.getAttribute("data-id"), 10)
-              const row = datatable.data.data[index].cells
-              let message = [
-                  "This is row ",
-                  (e.target.closest("tr").rowIndex + 1), " of ",
-                  datatable.options.perPage, " rendered rows and row ",
-                  (index + 1), " of ",
-                  datatable.data.length, " total rows."
-              ]
-              const data = [].slice.call(row).map(cell => cell.data)
-              message = message.join("")
-              message = `${message}\n\nThe row data is:\n${JSON.stringify(data)}`
-              alert(message)
-          }
-      })
-  }
-)
-</script>
 {{block "js" .}}
 {{end}}
 </div>

@@ -16,6 +16,7 @@ create_table("contacts") {
   t.Column("description", "string", {"default": ""})
   t.Column("objective", "string", {"default": ""})
   t.Column("timeline", "jsonb", {"default": "{}"})
+  t.Column("favorite", "bool", {"default": "false"})
 
 }
 

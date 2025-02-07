@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -91,6 +92,10 @@ func (m *Repository) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 // Contacts page handler
 func (m *Repository) Contacts(w http.ResponseWriter, r *http.Request) {
+	if !m.IsLoggedIn(w, r) {
+		m.App.Session.Put(r.Context(), "error", "You Must Login to Access This Page")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+	}
 	contacts, err := m.DB.GetAllContacts()
 	//fmt.Println(contacts.FirstName, "Printed in Contacts Handler")
 	if err != nil {
@@ -107,8 +112,101 @@ func (m *Repository) Contacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) ContactsNew(w http.ResponseWriter, r *http.Request) {
+	if !m.IsLoggedIn(w, r) {
+		m.App.Session.Put(r.Context(), "error", "You Must Login to Access This Page")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+	}
+	contact := models.Contact{}
+	m.App.Session.Put(r.Context(), "contact", contact)
+	data := map[string]interface{}{
+		"contact": contact,
+	}
 
-	render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{})
+	render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+		Data: data,
+	})
+}
+
+func (m *Repository) ContactsNewPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("func ContactsNewPost is running")
+	if !m.IsLoggedIn(w, r) {
+		// fmt.Println("func ContactsNewPost IsLoggedIn is running")
+		m.App.Session.Put(r.Context(), "error", "You Must Login to Complete Thie Action")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+	}
+
+	contact, ok := m.App.Session.Get(r.Context(), "contact").(models.Contact)
+	// fmt.Println("func ContactsNewPost Get Context is running")
+	if !ok {
+		m.App.Session.Put(r.Context(), "error", "can't get contact data from session")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+
+		return
+	}
+
+	// fmt.Printf("Content-Length: %d\n", r.ContentLength)
+	// fmt.Printf("Headers: %+v\n", r.Header)
+	err := r.ParseForm()
+	// fmt.Println("func ContactsNewPost parse form is running")
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "can't parse form")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	contact.FirstName = r.Form.Get("first_name")
+	contact.LastName = r.Form.Get("last_name")
+	contact.JobTitle = r.Form.Get("job_title")
+	contact.Email = r.Form.Get("email")
+	contact.Company.CompanyName = r.Form.Get("company")
+	contact.Objective = r.Form.Get("objective")
+	contact.MobilePhone = r.Form.Get("mobile_phone")
+	contact.WorkPhone = r.Form.Get("work_phone")
+	contact.Linkedin = r.Form.Get("linkedin")
+	contact.Github = r.Form.Get("github")
+	contact.Description = r.Form.Get("description")
+
+	if r.FormValue("favorite") == "true" {
+		contact.Favorite = true
+	}
+
+	// contact.Notes = r.Form.Get("notes")
+	// if r.Form.Get("favorite") == "favorite" {
+	// 	contact.Favorite = true
+	// } else {
+	// 	contact.Favorite = false
+	// }
+
+	form := forms.New(r.PostForm)
+
+	form.Required("first_name", "last_name", "email")
+	form.LengthTest("first_name", 3, 100)
+	form.IsEmail("email")
+
+	//Validate form data
+	if !form.Valid() {
+		data := make(map[string]interface{})
+		data["contact"] = contact
+		http.Error(w, "Invalid Form Data", http.StatusSeeOther)
+		render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{
+			Form: form,
+			Data: data,
+		})
+		return
+	}
+	//Write new contact to DataBase
+	user_id := m.App.Session.Get(r.Context(), "user_id").(string)
+
+	_, err = m.DB.AddNewContact(contact, user_id)
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "can't insert new contact into database")
+		http.Redirect(w, r, "/contacts", http.StatusTemporaryRedirect)
+		return
+	}
+	m.App.Session.Put(r.Context(), "flash", "Added new contact into database")
+	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
+	//render.Template(w, r, "contacts.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) ContactsNewJSON(w http.ResponseWriter, r *http.Request) {
@@ -116,6 +214,7 @@ func (m *Repository) ContactsNewJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) ContactsView(w http.ResponseWriter, r *http.Request) {
+
 	render.Template(w, r, "contacts-view.page.tmpl", &models.TemplateData{})
 }
 
@@ -190,7 +289,7 @@ func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request) {
 	//log.Println("User Authenticated", user_id)
 	m.App.Session.Put(r.Context(), "user_id", user_id)
 	m.App.Session.Put(r.Context(), "flash", "Logged in successfully")
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 // Logout logs a user out

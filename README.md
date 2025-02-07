@@ -2,13 +2,25 @@
 Career Journey is a Golang based web app to help users organize thier job hunt. 
 
 ## Build version 0.01
-The current build is pre-alpha. It has no actual functionality data interaction beyond prepopulated psudo-data to ensure functionality with the databse. 
+The current build is pre-alpha. It has no actual functionality for data interaction beyond prepopulated psudo-data to ensure functionality with the databse. 
 
 ## Requirements
 - Uses PostgreSQL: This can be swapped out to a DB of your choice with slight modifications. 
-
+- Database Migrations: Built using Soda [gobuffalo.io](https://gobuffalo.io/documentation/database/migrations/)
 ## Installation 
-
+- Install Go
+- Install PostgreSQL
+- Install Ollama
+- Clone the Repository 
+```
+gh repo clone https://github.com/cyberjourney20/career-journey
+```
+- Update .env with your local variables
+- Build the program
+```
+go build -o career-journey.exe ./cmd/web 
+```
+- Run the exe and navigate to localhost:8080
 
 ## Feature Developement
 - Currently working to integrate local Deepseek-R1:8B for various tasks.

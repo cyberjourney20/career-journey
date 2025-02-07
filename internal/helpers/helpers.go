@@ -2,10 +2,13 @@ package helpers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"runtime/debug"
 
 	"github.com/cyberjourney20/career-journey/internal/config"
+	"github.com/joho/godotenv"
 )
 
 var app *config.AppConfig
@@ -29,4 +32,13 @@ func ServerError(w http.ResponseWriter, err error) {
 func IsAuthenticated(r *http.Request) bool {
 	exists := app.Session.Exists(r.Context(), "user_id")
 	return exists
+}
+
+func LoadEnv(key string) string {
+	err := godotenv.Load(os.ExpandEnv("./.env"))
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
+
+	return os.Getenv(key)
 }

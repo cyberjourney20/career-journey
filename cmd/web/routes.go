@@ -37,7 +37,8 @@ func routes(app *config.AppConfig) http.Handler {
 	})
 	mux.Route("/contacts", func(mux chi.Router) {
 		mux.Get("/", handlers.Repo.Contacts)
-		mux.Post("/contacts/new", handlers.Repo.ContactsNew)
+		mux.Get("/new", handlers.Repo.ContactsNew)
+		mux.Post("/new", handlers.Repo.ContactsNewPost)
 		// mux.Get("/contacts/view", handlers.Repo.Contacts)
 		// mux.Post("/contacts/update-json", handlers.Repo.Contacts)
 	})

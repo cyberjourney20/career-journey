@@ -1,96 +1,18 @@
-function Prompt() {
-    let toast = function(c) {
-        const {
-            msg = "",
-            icon = "success",
-            position = "top-end",
-        } = c;
-        const Toast = Swal.mixin({
-        toast: true,
-        title: msg,
-        position: position,
-        icon: icon,
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.onmouseenter = Swal.stopTimer;
-            toast.onmouseleave = Swal.resumeTimer;
-        }
-        });
-        Toast.fire({});
-    }
+{{template "base" .}}
 
-    let success = function(c) {
-        const {
-            icon = "success",
-            msg = "",
-            title = "",
-            href = "index.html",
-            linktxt = "Link!"
-        } = c;
-        Swal.fire({
-            icon: icon,
-            title: title,
-            text: msg,
-            footer: "<a href=" + href + ">" + linktxt + "</a>"
-            });
-    }
+{{define "page-title"}}
+{{end}}
+{{define "css"}}
+{{end}}
 
-    async function custom(c){
-        const {
-            icon = "",
-            msg = "",
-            title = "",
-            showConfirmButton = true,
+{{define "content"}}
 
-        } = c;
-
-        const { value: result } = await Swal.fire({
-            icon : icon,
-            title: title,
-            html: msg,
-            backdrop: false,
-            focusConfirm: false,
-            showCancelButton: true,
-            showConfirmButton: showConfirmButton,
-            willOpen: () => {
-                if (c.willOpen !== undefined){
-                    c.willOpen();
-                }
-            },
-            didOpen: () => {
-                if (c.didOpen !== undefined) {
-                    c.didOpen();
-                }
-            }
-        })
-        if (result) {
-            if (result.dismiss !== Swal.DismissReason.cancel) {
-                if (result.value !=="") {
-                    if (c.callback !== undefined) {
-                        c.callback(result);
-                    }
-                } else {
-                    c.callbacl(false);
-                }
-            } else {
-                c.callback(false);
-            }
-        }
-    }
-
-    return {
-        toast: toast,
-        success: success,
-        custom: custom,
-    }
-}
-
-function newContact() {
-    Swal.fire({
-        title: "Add New Contact",
-        html:`<form class="forms">
+<div class="col-lg-12 grid-margin stretch-card">
+  <div class="card">
+    <div class="card-body">
+      
+      <form class="forms" action="/contacts/new" method="post">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="row">
           <div class="col-md-12">
           <h4 class="display-3">Add New Contact</h4>
@@ -98,12 +20,12 @@ function newContact() {
           <div class="row">
             <div class="col-md-6">
               <div class="form-group float-right">
-                <div class="form-check">
-                  <label class="form-check-label">
-                  <input type="checkbox" class="form-check-input">
-                  Favorite
+                <div class="form-check-primary">
+                  <input type="checkbox" value="true" name="favorite" class="form-check-input">
+                  <label class="form-check-label">Favorite
                   <i class="input-helper"></i>
-                  </label>
+                </label>
+
                 </div>
               </div>
             </div>
@@ -114,11 +36,11 @@ function newContact() {
         <div class="row">
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">First Name</label>
+              <label class="col-sm-2 col-form-label">First Name</label>
               {{with .Form.Errors.Get "first_name"}}
               <label class="text-danger">{{.}}</label>
               {{end}}
-              <div class="col-sm-9">
+              <div class="col-sm-10">
                 <input type="text" name="first_name" class="form-control" {{with .Form.Errors.Get "first_name"}} is-invalid {{end}}
                 id="first_name" required autocomplete="off"> 
               </div>
@@ -126,11 +48,11 @@ function newContact() {
           </div>
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">Last Name</label>
+              <label class="col-sm-2 col-form-label">Last Name</label>
               {{with .Form.Errors.Get "last_name"}}
               <label class="text-danger">{{.}}</label>
               {{end}}
-              <div class="col-sm-9">
+              <div class="col-sm-10">
                 <input type="text" name="last_name" class="form-control" {{with .Form.Errors.Get "last_name"}} is-invalid {{end}}
                 id="last_name" required autocomplete="off"> 
               </div>
@@ -141,22 +63,22 @@ function newContact() {
         <div class="row">
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">Job Title</label>
+              <label class="col-sm-2 col-form-label">Job Title</label>
               {{with .Form.Errors.Get "job_title"}}
               <label class="text-danger">{{.}}</label>
               {{end}}
-              <div class="col-sm-9">
+              <div class="col-sm-10">
                 <input type="text" name="job_title" class="form-control" id="job_title" required autocomplete="off"> 
               </div>
             </div>
           </div>
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">Email</label>
+              <label class="col-sm-2 col-form-label">Email</label>
               {{with .Form.Errors.Get "email"}}
               <label class="text-danger">{{.}}</label>
               {{end}}
-              <div class="col-sm-9">
+              <div class="col-sm-10">
                 <input type="text" name="email" class="form-control" {{with .Form.Errors.Get "email"}} is-invalid {{end}}
                 id="email" required autocomplete="off"> 
               </div>
@@ -167,8 +89,8 @@ function newContact() {
         <div class="row">
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">Company</label>
-              <div class="col-sm-9">
+              <label class="col-sm-2 col-form-label">Company</label>
+              <div class="col-sm-10">
                 <div class="input-group">
                   <input type="text" name="company" class="form-control" id="company" autocomplete="off"> 
                   <div class="input-group-append">
@@ -180,8 +102,8 @@ function newContact() {
           </div>
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">Objective</label>
-              <div class="col-sm-9">
+              <label class="col-sm-2 col-form-label">Objective</label>
+              <div class="col-sm-10">
                 <select name="objective" class="form-control" id="objective"> 
                   <option>Networking</option>
                   <option>Interview</option>
@@ -201,16 +123,16 @@ function newContact() {
         <div class="row">
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">Mobile Phone</label>
-              <div class="col-sm-9">
+              <label class="col-sm-2 col-form-label">Mobile Phone</label>
+              <div class="col-sm-10">
                 <input type="text" name="mobile_phone" class="form-control" id="mobile_phone" autocomplete="off"> 
               </div>
             </div>
           </div>
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">Work Phone</label>
-              <div class="col-sm-9">
+              <label class="col-sm-2 col-form-label">Work Phone</label>
+              <div class="col-sm-10">
                 <input type="text" name="work_phone" class="form-control" id="work_phone" autocomplete="off"> 
               </div>
             </div>
@@ -220,16 +142,16 @@ function newContact() {
         <div class="row">
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">LinkedIn</label>
-              <div class="col-sm-9">
+              <label class="col-sm-2 col-form-label">LinkedIn</label>
+              <div class="col-sm-10">
                 <input type="text" name="linkedin" class="form-control" id="linkedin" autocomplete="off"> 
               </div>
             </div>
           </div>
           <div class="col-md-6">
             <div class="for-group row">
-              <label class="col-sm-3 col-form-label">GitHub</label>
-              <div class="col-sm-9">
+              <label class="col-sm-2 col-form-label">GitHub</label>
+              <div class="col-sm-10">
                 <input type="text" name="github" class="form-control" id="github" autocomplete="off"> 
               </div>
             </div>
@@ -258,6 +180,15 @@ function newContact() {
           </div>
         </div><br>
         <button type="submit" class="btn btn-primary mb-2">Submit</button>
-      </form>`
-    })
-}
+      </form>
+
+    </div>
+  </div>
+</div>
+</div>
+
+{{end}}
+
+{{define "js"}}
+{{end}}
+

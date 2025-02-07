@@ -15,10 +15,7 @@ import (
 	"github.com/cyberjourney20/career-journey/internal/helpers"
 	"github.com/cyberjourney20/career-journey/internal/models"
 	"github.com/cyberjourney20/career-journey/internal/render"
-	"github.com/joho/godotenv"
 )
-
-const portNumber = ":8080"
 
 var app config.AppConfig
 var session *scs.SessionManager
@@ -32,7 +29,7 @@ func main() {
 	}
 	//Close db connectiion when program closes
 	defer db.SQL.Close()
-
+	portNumber := helpers.LoadEnv("HTTP_PORT")
 	fmt.Printf("Starting application on port: %s\n", portNumber)
 
 	// Starts HTTP Server
@@ -71,13 +68,7 @@ func run() (*driver.DB, error) {
 
 	app.Session = session
 
-	//godotenv to load secrets from .env file
-	err := godotenv.Load(os.ExpandEnv("./.env"))
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	dbString := os.Getenv("DBSTRING")
+	dbString := helpers.LoadEnv("DBSTRING")
 
 	//connect to database
 	log.Println("Connecting to database...")

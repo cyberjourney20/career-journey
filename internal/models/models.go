@@ -52,7 +52,7 @@ type Application struct {
 	POC         Contact
 	AppStatus   string
 	Notes       string
-	AppTimeLine []TimeLineData
+	AppTimeLine string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
