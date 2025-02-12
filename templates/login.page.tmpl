@@ -19,11 +19,11 @@
       <div class="input-group">
         <div class="input-group-prepend bg-transparent">
           <span class="input-group-text bg-transparent border-right-0">
-            <i class="ti-user text-primary"></i>
+            <i class="ti-user text-primary" ></i>
           </span>
         </div>
-        
-        <input type="email" name="email" class="form-control form-control-lg border-left-0 needs-validation" 
+<!-- REMOVE LOGIN CREDENTIALS FOR PROSUCTION -->
+        <input value="admin@careerjourney.xyz" type="email" name="email" class="form-control form-control-lg border-left-0 needs-validation" 
         required autocomplete="off" {{with .Form.Errors.Get "email"}} is-invalid {{end}} id="email" placeholder="Email" value="">
       </div>
     </div>
@@ -35,11 +35,11 @@
       <div class="input-group">
         <div class="input-group-prepend bg-transparent">
           <span class="input-group-text bg-transparent border-right-0">
-            <i class="ti-lock text-primary"></i>
+            <i class="ti-lock text-primary" ></i>
           </span>
         </div>
-        
-        <input type="password" name="password" class="form-control form-control-lg border-left-0 needs-validation" 
+<!-- REMOVE LOGIN CREDENTIALS FOR PROSUCTION -->        
+        <input value="password" type="password" name="password" class="form-control form-control-lg border-left-0 needs-validation" 
         required autocomplete="off" {{with .Form.Errors.Get "password"}} is-invalid {{end}} id="password" placeholder="Password" value="">                        
       </div>
     </div>

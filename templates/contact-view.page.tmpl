@@ -1,0 +1,143 @@
+{{template "base" .}}
+
+{{define "css"}}
+{{end}}
+
+{{define "page-title"}}
+Contact Details
+{{end}}
+
+{{define "content"}}
+{{$ct := index .Data "contact"}}
+
+{{$src := index .StringMap "src"}} 
+<div class="row">
+  <div class="col-lg-8 grid-margin stretch-card container-fluid">
+    <div class="card bg-light">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-lg-9">
+            <h4 class="display-3 float-left" style="margin-left: 1rem;"> {{$ct.FirstName}} {{$ct.LastName}}</h4>
+          </div> 
+          <div class="col-lg-3 text-center"><strong>Objective</strong> 
+            <div class="col text-center">{{$ct.Objective}}</div>
+          </div>
+          <div class="col-lg-8"> <hr style="margin-top: 0rem;"></div> 
+           
+        </div>
+        <div class="row grid-margin">
+          <div class="col-md-1"></div>
+            <div class="col-md-10 grid-margin">
+              <div class="row">
+                <p class="display-4">Contact Info</p>
+                <div class="card">
+                  <div class="card-body">
+                    <div class="col-md-12">
+                      <p class="display-5"><strong>Title: </strong>{{$ct.JobTitle}}</p>
+                      <p class="display-5"><strong> Email: </strong>{{$ct.Email}}</p>
+                      <p class="display-5"><strong> Mobile: </strong>{{$ct.MobilePhone}}</p>
+                      <p class="display-5"><strong> Work: </strong>{{$ct.WorkPhone}}</p>
+                      <p class="display-5"><strong> Linkedin: </strong><a href="{{$ct.WorkPhone}}"></a></p>
+                      <p class="display-5"><strong> GitHub: </strong><a href="{{$ct.Github}}"></a></p>
+                      <p class="display-5"><strong> Website: </strong><a href="{{$ct.Website}}"></a></p>
+                    </div>
+                  </div>
+                </div>
+              </div><br>
+              <div class="row">
+                <p class="display-4">Company</p>
+                <div class="card">
+                  <div class="card-body">
+                    <div class="col-md-12">
+                      <p class="display-5"><strong>Company: </strong>{{$ct.Company.CompanyName}}</p>
+                      <p class="display-5"><strong>Industry: </strong>{{$ct.Company.Industry}}</p>
+                      <p class="display-5"><strong>Size: </strong>{{$ct.Company.Size}}</p>
+                      <p class="display-5"><strong>Website: </strong><a href="{{$ct.Company.URL}}"></a></p>
+                    </div>
+                  </div>
+                </div>
+              </div><br>
+              <form>
+                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+              <div class="row">
+                <div class="col-md-6"> 
+                  <p class="display-5">Details</p>    
+                </div>
+                <div class="col-md-6">
+                  <p class="display-5">Notes</p>
+                </div>
+              </div>
+              <div class="row grid-margin" style="padding: 0rem;">
+                <div class="col-md-6" style=" padding-left:0;">
+                  <div class="card" >
+                    <div class="card-body" style="padding: 0rem;">
+                      <textarea type="text" style="padding: .5rem; border-style: none;" name="details" 
+                      class="form-control" id="details" autocomplete="off" rows="10">{{$ct.Description}}</textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6" style=" padding-right:0;" >
+                  <div class="card float-right ">
+                    <div class="card-body" style="padding: 0rem;">
+                      <textarea type="text" style="padding: .5rem; border-style: none; " name="notes" 
+                      class="form-control" id="notes" autocomplete="off" rows="10"> {{$ct.Notes}}</textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+                <div class="row">
+                  <div class="col-sm-3">
+                    <button type="button" class="text-truncate btn btn-primary btn-fw"  
+                    onclick="location.href='/{{$src}}'">Back</button>
+                  </div>
+                  <div class="col-sm-3">
+                    <button type="button" class="text-truncate btn btn-warning btn-fw" disabled
+                    onclick="location.href='/contacts/view/{{$src}}/{{$ct.ID}}'">Save</button>
+                  </div>
+                  <div class="col-sm-3">
+                    <button type="button" class="text-truncate btn btn-danger btn-fw"  
+                    onclick="location.href='javascript: location.reload();'">Cancel</button>
+                  </div>
+                  <div class="col-sm-3">
+                    <button type="button" action="get" class="grid-margin btn btn-secondary btn-fw"  
+                    onclick="location.href='/contacts/edit/{{$src}}/{{$ct.ID}}'">Edit</button>
+                  </div>
+                  </div>
+             
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4 grid-margin stretch-card container-fluid">
+    <div class="card bg-light">
+      <div class="card-body" style="padding: 1rem; padding-top: 1.5rem;">
+      <!-- TIMELINE COLUMN RIGHT  -->
+      <!-- <div class="container col-lg-4 "> -->
+      <p class="display-4 text-center">Timeline</p>
+        <div class="col-sm-12">
+          <div class="card">
+            <div class="card-body" >
+              <p>Event 1: 7 Feb 2025</p>
+              <p>Event 2: 7 Feb 2025</p>
+              <p>Event 3: 7 Feb 2025</p>
+              <p>Event 4: 7 Feb 2025</p>
+              <p>Event 5: 7 Feb 2025</p>
+              <p>Event 6: 7 Feb 2025</p>
+              <p>Event 7: 7 Feb 2025</p>
+              <p>Event 8: 7 Feb 2025</p><br>
+              <!-- ADD ATIMELINE ADD CAPABILITY -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{end}}
+
+{{define "js"}}
+{{end}}

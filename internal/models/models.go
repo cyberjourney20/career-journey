@@ -71,7 +71,7 @@ type JobListing struct {
 	LowPay         int
 	HighPay        int
 	TargetPay      int
-	Location       []Location
+	Location       Location
 	Posted         time.Time
 	Closes         time.Time
 	CreatedAt      time.Time
@@ -82,6 +82,9 @@ type Company struct {
 	ID          int
 	CompanyName string
 	URL         string
+	Address     Location
+	Industry    string
+	Size        string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

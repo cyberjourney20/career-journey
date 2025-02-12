@@ -13,17 +13,14 @@
   <div class="card">
     <div class="card-body">
       <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-12">
           <h4 class="display-3">Contacts</h4>
         </div>
         <div class="col-md-3">
-          <form action="/contacts/new">
-            <button type="submit" class="btn btn-outline-dark btn-fw">New Contact</button>
-            <!-- <button type="button" onclick="newContact()"class="btn btn-outline-dark btn-fw">New Contact</button> -->
-          </form>
+            <button type="button" onclick="location.href='/contacts/new/contacts'"class="btn btn-outline-dark btn-fw">New Contact</button>
         </div>
     </div>
-    
+    <div class="row"><br>
       <div class="table-responsive">
         <table class="table table-hover" id="contacts">
           {{$cts := index .Data "contacts"}}
@@ -52,38 +49,26 @@
               <td>{{.Company.CompanyName}}</td>
               <td>{{.JobTitle}}</td>
               <td>{{.Objective}}</td>
-              <td type="button" class="btn btn-inverse-primary ti-pencil"  onclick="location.href='/contacts/view/{{.ID}}'"></td>
+              <td type="button" class="btn btn-inverse-primary ti-pencil"  onclick="location.href='/contacts/view/contacts/{{.ID}}'"></td>
             </tr>
             {{end}}
           </tbody>
         </table>
+        </div>
+
       </div>
     </div>
   </div>
-</div>
-</div>
 
 {{end}}
 
 {{define "js"}}
-
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" defer></script>
-
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    console.log("SimpleDataTables Loaded?", typeof simpleDatatables);
-
-    let tableElement = document.querySelector("#contacts");
-
-    if (tableElement) {
-      new simpleDatatables.DataTable(tableElement, {
-        searchable: true,
-        perPage: 10,
-        sort: [[0, "desc"]]
-      });
-    } else {
-      console.error("Table with ID 'contacts' not found.");
-    }
-  });
+        document.addEventListener("DOMContentLoaded", function() {
+            const dataTable = new simpleDatatables.DataTable("#contacts", {
+                select: 3, sort: "desc",
+            })
+        })
 </script>
 {{end}}

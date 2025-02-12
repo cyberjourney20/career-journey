@@ -6,6 +6,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>Career Journey</title>
+	
 	<!-- plugins:css -->
 	<link rel="stylesheet" href="/static/css/themify-icons.css">
 	<link rel="stylesheet" href="/static/css/vendor.bundle.base.css">
@@ -21,7 +22,6 @@
 {{block "css" .}}
 {{end}}
 </head>
-
 <body>
 	<input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
 	<div class="container-scroller">
@@ -260,7 +260,8 @@
 
 {{block "content" .}}
 {{end}}			
-
+</div>
+</div>
 </div>
 </div>
 <!-- Footer Content -->
@@ -269,7 +270,8 @@
 			<p>From Search to Success - Take Charge of Your Career Journey.</p>
 		</div>
 	</footer>
-
+{{block "js" .}}
+{{end}}
 <!-- Inject JS -->
 <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
 <script src="/static/js/base/vendor.bundle.base.js"></script>
@@ -384,8 +386,7 @@
 	)
 	</script> -->
 
-{{block "js" .}}
-{{end}}
+
 </div>
 </body>
 </html>

@@ -6,7 +6,10 @@
 {{end}}
 
 {{define "content"}}
-
+{{$ct := index .Data "contact"}}
+{{$editMode := index .Data "editMode"}}
+{{$src := index .StringMap "src"}}
+{{$id := index .StringMap "id"}} 
 <div class="col-lg-12 grid-margin stretch-card">
   <div class="card">
     <div class="card-body">
@@ -15,16 +18,21 @@
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="row">
           <div class="col-md-12">
-          <h4 class="display-3">Add New Contact</h4>
+            {{if $editMode}}
+            <h4 class="display-3">Edit Contact</h4>
+            {{else}}
+            <h4 class="display-3">Add New Contact</h4>
+            {{end}}
           </div> <br>
           <div class="row">
             <div class="col-md-6">
               <div class="form-group float-right">
                 <div class="form-check-primary">
-                  <input type="checkbox" value="true" name="favorite" class="form-check-input">
+                  <input type="checkbox" value="true" name="favorite" class="form-check-input"
+                  {{if $ct.Favorite}} checked {{end}}>
                   <label class="form-check-label">Favorite
                   <i class="input-helper"></i>
-                </label>
+                  </label>
 
                 </div>
               </div>
@@ -37,12 +45,12 @@
           <div class="col-md-6">
             <div class="for-group row">
               <label class="col-sm-2 col-form-label">First Name</label>
-              {{with .Form.Errors.Get "first_name"}}
-              <label class="text-danger">{{.}}</label>
-              {{end}}
+					    {{with .Form.Errors.Get "first_name"}}
+					      <label class="text-danger">{{.}}</label>
+					    {{end}}
               <div class="col-sm-10">
-                <input type="text" name="first_name" class="form-control" {{with .Form.Errors.Get "first_name"}} is-invalid {{end}}
-                id="first_name" required autocomplete="off"> 
+                <input type="text" name="first_name" class="form-control{{with .Form.Errors.Get "first_name"}} is-invalid {{end}}" 
+                value="{{$ct.FirstName}}" id="first_name" required autocomplete="off"> 
               </div>
             </div>
           </div>
@@ -50,53 +58,27 @@
             <div class="for-group row">
               <label class="col-sm-2 col-form-label">Last Name</label>
               {{with .Form.Errors.Get "last_name"}}
-              <label class="text-danger">{{.}}</label>
-              {{end}}
+                <label class="text-danger">{{.}}</label>
+					    {{end}}
               <div class="col-sm-10">
-                <input type="text" name="last_name" class="form-control" {{with .Form.Errors.Get "last_name"}} is-invalid {{end}}
-                id="last_name" required autocomplete="off"> 
+                <input type="text" name="last_name" class="form-control {{with .Form.Errors.Get "last_name"}} is-invalid {{end}}" 
+                value="{{$ct.LastName}}" id="last_name" required autocomplete="off"> 
               </div>
             </div>
           </div>
         </div><br>
 
         <div class="row">
-          <div class="col-md-6">
-            <div class="for-group row">
-              <label class="col-sm-2 col-form-label">Job Title</label>
-              {{with .Form.Errors.Get "job_title"}}
-              <label class="text-danger">{{.}}</label>
-              {{end}}
-              <div class="col-sm-10">
-                <input type="text" name="job_title" class="form-control" id="job_title" required autocomplete="off"> 
-              </div>
-            </div>
-          </div>
           <div class="col-md-6">
             <div class="for-group row">
               <label class="col-sm-2 col-form-label">Email</label>
               {{with .Form.Errors.Get "email"}}
-              <label class="text-danger">{{.}}</label>
-              {{end}}
+                <label class="text-danger">{{.}}</label>
+					    {{end}}
+          
               <div class="col-sm-10">
-                <input type="text" name="email" class="form-control" {{with .Form.Errors.Get "email"}} is-invalid {{end}}
-                id="email" required autocomplete="off"> 
-              </div>
-            </div>
-          </div>
-        </div><br>
-
-        <div class="row">
-          <div class="col-md-6">
-            <div class="for-group row">
-              <label class="col-sm-2 col-form-label">Company</label>
-              <div class="col-sm-10">
-                <div class="input-group">
-                  <input type="text" name="company" class="form-control" id="company" autocomplete="off"> 
-                  <div class="input-group-append">
-                    <button class="btn btn-sm btn-outline-primary" type="button">Search</button>
-                  </div>
-                </div>
+                <input type="text" name="email" class="form-control{{with .Form.Errors.Get "last_name"}} is-invalid {{end}}" 
+                value="{{$ct.Email}}" id="email" required autocomplete="off"> 
               </div>
             </div>
           </div>
@@ -104,7 +86,7 @@
             <div class="for-group row">
               <label class="col-sm-2 col-form-label">Objective</label>
               <div class="col-sm-10">
-                <select name="objective" class="form-control" id="objective"> 
+                <select name="objective" class="form-control" id="objective" value="{{$ct.Objective}}"> 
                   <option>Networking</option>
                   <option>Interview</option>
                   <option>Research</option>
@@ -116,16 +98,15 @@
               </div>
             </div>
           </div>
-          
         </div><br>
 
-        <p class="card-description">Phone and Links</p>
+        <p class="card-description">Contact Information</p>
         <div class="row">
           <div class="col-md-6">
             <div class="for-group row">
               <label class="col-sm-2 col-form-label">Mobile Phone</label>
               <div class="col-sm-10">
-                <input type="text" name="mobile_phone" class="form-control" id="mobile_phone" autocomplete="off"> 
+                <input type="text" name="mobile_phone" class="form-control" value="{{$ct.MobilePhone}}" id="mobile_phone" autocomplete="off"> 
               </div>
             </div>
           </div>
@@ -133,7 +114,7 @@
             <div class="for-group row">
               <label class="col-sm-2 col-form-label">Work Phone</label>
               <div class="col-sm-10">
-                <input type="text" name="work_phone" class="form-control" id="work_phone" autocomplete="off"> 
+                <input type="text" name="work_phone" class="form-control" value="{{$ct.WorkPhone}}" id="work_phone" autocomplete="off"> 
               </div>
             </div>
           </div>
@@ -144,7 +125,7 @@
             <div class="for-group row">
               <label class="col-sm-2 col-form-label">LinkedIn</label>
               <div class="col-sm-10">
-                <input type="text" name="linkedin" class="form-control" id="linkedin" autocomplete="off"> 
+                <input type="text" name="linkedin" class="form-control" value="{{$ct.Linkedin}}" id="linkedin" autocomplete="off"> 
               </div>
             </div>
           </div>
@@ -152,12 +133,90 @@
             <div class="for-group row">
               <label class="col-sm-2 col-form-label">GitHub</label>
               <div class="col-sm-10">
-                <input type="text" name="github" class="form-control" id="github" autocomplete="off"> 
+                <input type="text" name="github" class="form-control" value="{{$ct.Github}}" id="github" autocomplete="off"> 
               </div>
             </div>
           </div>
         </div><br>
 
+        <p class="card-description">Business Information</p>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="for-group row">
+              <label class="col-sm-2 col-form-label">Company</label>
+              <div class="col-sm-10">
+                <div class="input-group">
+                  <input type="text" name="company" class="form-control" value="{{$ct.Company.CompanyName}}" id="company" autocomplete="off"> 
+                  <div class="input-group-append">
+                    <button class="btn btn-sm btn-outline-primary" id="companyDropdown" type="button">Search</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="for-group row">
+              <label class="col-sm-2 col-form-label">Job Title</label>
+              {{with .Form.Errors.Get "job_title"}}
+              <label class="text-danger">{{.}}</label>
+              {{end}}
+              <div class="col-sm-10">
+                <input type="text" name="job_title" class="form-control" value="{{$ct.JobTitle}}" id="job_title" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+        </div> <br>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="for-group row">
+              <label class="col-sm-2 col-form-label">URL</label>
+              <div class="col-sm-10">
+                <div class="input-group">
+                  <input type="text" name="company_url" class="form-control" vvalue="{{$ct.Company.URL}}" id="company_url" autocomplete="off"> 
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="for-group row">
+              <label class="col-sm-2 col-form-label">Industry</label>
+              <div class="col-sm-4">
+                <input type="text" name="industry" class="form-control" value="{{$ct.Company.Industry}}" id="industry" autocomplete="off"> 
+              </div>
+              <label class="col-sm-2 col-form-label">Size</label>
+              <div class="col-sm-4">
+                <input type="text" name="size" class="form-control" id="size" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+        </div><br>
+
+        <!-- <p class="card-description">Addresses</p>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="for-group row">
+              <label class="col-sm-4 col-form-label">Contact Address</label>
+              <div class="col-sm-12">
+                <textarea type="text" name="contact_address" class="form-control" id="contact_address" autocomplete="off" rows="4"></textarea>
+              </div>
+            </div>
+            </div>
+          
+
+          <div class="col-md-6">
+            <div class="for-group row">
+              <label class="col-sm-4 col-form-label">Business Address</label>
+              <div class="col-sm-12">
+                <textarea type="text" name="business_address" class="form-control" id="business_address" autocomplete="off" rows="4"></textarea>
+              </div>
+            </div>
+          </div>
+ 
+        </div><br> -->
+
+
+        <p class="card-description">Additional Information</p>
         <div class="row">
           <div class="col-md-12">
             <div class="for-group row">
@@ -180,6 +239,13 @@
           </div>
         </div><br>
         <button type="submit" class="btn btn-primary mb-2">Submit</button>
+        {{if $editMode}}
+        <button type="button" onclick="location.href='/contacts/view/{{$src}}/{{$ct.ID}}'" 
+        class="btn btn-danger mb-2">Cancel</button>
+        {{else}}
+        <button type="button" onclick="location.href='/{{$src}}'" 
+        class="btn btn-danger mb-2">Cancel</button>
+        {{end}}
       </form>
 
     </div>
@@ -190,5 +256,26 @@
 {{end}}
 
 {{define "js"}}
+<script>
+  function myFunction() {
+  document.getElementById("companyDropdown").classList.toggle("show");
+}
+
+function filterFunction() {
+  var input, filter, ul, li, a, i;
+  input = document.getElementById("myInput");
+  filter = input.value.toUpperCase();
+  div = document.getElementById("myDropdown");
+  a = div.getElementsByTagName("a");
+  for (i = 0; i < a.length; i++) {
+    txtValue = a[i].textContent || a[i].innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      a[i].style.display = "";
+    } else {
+      a[i].style.display = "none";
+    }
+  }
+}
+</script>
 {{end}}
 

@@ -3,18 +3,45 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/cyberjourney20/career-journey/internal/models"
+	"github.com/cyberjourney20/career-journey/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (m *postgresDBRepo) AllUsers() bool {
 	return true
+}
+
+// Authenticate authenticates a user
+func (m *postgresDBRepo) Authenticate(email, testPassword string) (string, string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var id string
+	var hashedPassword string
+
+	row := m.DB.QueryRowContext(ctx, "select user_id, password from users where lower(email)=lower($1)", email)
+	err := row.Scan(&id, &hashedPassword)
+	if err != nil {
+		log.Println("func Authenticate, error 1")
+		return "", "", err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		log.Println("func Authenticate, error 2")
+		return "", "", errors.New("incorrect password")
+	} else if err != nil {
+		log.Println("func Authenticate, error 3")
+		return "", "", err
+	}
+	log.Println("func Authenticate, no error")
+	return id, hashedPassword, nil
 }
 
 func (m *postgresDBRepo) GetAllContacts() ([]models.Contact, error) {
@@ -141,10 +168,10 @@ func (m *postgresDBRepo) GetContactByID(id int, user_id string) (models.Contact,
 	c.timeline, c.favorite, c.created_at, c.updated_at, cp.company_name 
 	from contacts c
 	left join companies cp on c.company_id=cp.id
-	where c.user_id='$1' and c.id='$2'`
+	where c.id=$1`
 
 	// Get UserID in QueryContext call from session
-	row := m.DB.QueryRowContext(ctx, query, user_id, id)
+	row := m.DB.QueryRowContext(ctx, query, id)
 	err := row.Scan(
 		&contact.ID,
 		&contact.FirstName,
@@ -172,8 +199,8 @@ func (m *postgresDBRepo) GetContactByID(id int, user_id string) (models.Contact,
 	return contact, nil
 }
 
-// SearchCompany foir use in new contacts form
-func (m *postgresDBRepo) CompanyExists(c models.Contact) (int, error) {
+// CompanyExists searches for an existing company by Name and returns its ID
+func (m *postgresDBRepo) CompanyExists(cmp models.Company) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -181,7 +208,7 @@ func (m *postgresDBRepo) CompanyExists(c models.Contact) (int, error) {
 	select cmp.id, cmp.company_name
 	from companies cmp
 	where lower(cmp.company_name)=lower($1)`
-	row := m.DB.QueryRowContext(ctx, query, c.Company.CompanyName)
+	row := m.DB.QueryRowContext(ctx, query, cmp.CompanyName)
 	var cpny models.Company
 	err := row.Scan(
 		&cpny.ID,
@@ -195,6 +222,35 @@ func (m *postgresDBRepo) CompanyExists(c models.Contact) (int, error) {
 		}
 	}
 	return cpny.ID, nil
+
+}
+
+// AddNewCompany adds a new company to companies table
+func (m *postgresDBRepo) AddNewCompany(cmp models.Company) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	//check if company exists  with func CompanyExists in parent function
+
+	var returnID int
+	stmt := `insert into companies (company_name, url, address, industry, size, created_at, updated_at) 
+	values ($1, $2, $3, $4, $5, $6, $6) returning id`
+
+	err := m.DB.QueryRowContext(ctx, stmt,
+		cmp.CompanyName,
+		cmp.URL,
+		cmp.Address,
+		cmp.Industry,
+		cmp.Size,
+		time.Now(),
+	).Scan(&returnID)
+
+	if err != nil {
+		fmt.Println("Error in AddNewContact insert company", err)
+		return 0, err
+	}
+	log.Printf("Got New ID: %d", returnID)
+	return returnID, nil
 
 }
 
@@ -218,34 +274,32 @@ func (m *postgresDBRepo) AddNewContact(c models.Contact, user_id string) (int, e
 
 	// check for no company listed
 	// Check if company exists, if yes, get existing ID, if no, add it and get a new ID
-	tempID, err := m.CompanyExists(c)
+	tempID, err := m.CompanyExists(c.Company)
 	var returnID int
 	if err != nil {
 		log.Println("error in CompanyExists", err)
 	}
-
 	if tempID > 0 {
 		returnID = tempID
 		log.Printf("Temp ID: %d", tempID)
 	} else {
-		//AddNewCompany(c.Company.CompanyName)
-		stmt1 := `insert into companies (company_name, created_at, updated_at) values ($1, $2, $2) returning id`
-		err := m.DB.QueryRowContext(ctx, stmt1, c.Company.CompanyName, time.Now()).Scan(&returnID)
+		returnID, err := m.AddNewCompany(c.Company)
 		if err != nil {
-			fmt.Println("Error in AddNewContact insert company", err)
+			log.Println("error in AddNewCompany", err)
 			return 0, err
 		}
-		log.Printf("Got New ID: %d", returnID)
+		return returnID, nil
 	}
+	log.Printf("Got New Company ID: %d", returnID)
 
-	stmt2 := `
+	stmt := `
 	insert into contacts (first_name, last_name, job_title, email, objective, mobile_phone, work_phone, 
 	linkedin, github, description, notes, user_id, timeline, favorite, created_at, updated_at, company_id) 
 	values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 	`
-	c.ContactTimeLine = TimeLineBuilderJSON(time.Now(), "Contact Created")
+	c.ContactTimeLine = utils.TimeLineBuilderJSON(time.Now(), "Contact Created")
 
-	_, err = m.DB.ExecContext(ctx, stmt2,
+	_, err = m.DB.ExecContext(ctx, stmt,
 		c.FirstName,
 		c.LastName,
 		c.JobTitle,
@@ -272,52 +326,83 @@ func (m *postgresDBRepo) AddNewContact(c models.Contact, user_id string) (int, e
 	return 1, nil
 }
 
-func TimeLineBuilderJSON(t time.Time, s string) string {
-	timeline := map[string]string{
-		"marker": t.Format(time.RFC3339), // Use a standard format
-		"event":  s,
-	}
-	// Marshal the map into JSON bytes
-	jsonBytes, err := json.Marshal(timeline)
-	if err != nil {
-		log.Printf("Error marshaling JSON: %v", err)
-		return ""
-	}
-
-	// Return the JSON as a string
-	return string(jsonBytes)
-
-	// ts := t.String()
-	// json := fmt.Sprintf("{'marker':'%s', 'event':'%s'}", ts, s)
-	// return json
-
-}
-
-// Authenticate authenticates a user
-func (m *postgresDBRepo) Authenticate(email, testPassword string) (string, string, error) {
+func (m *postgresDBRepo) GetAllCompanies() ([]models.Company, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var id string
-	var hashedPassword string
+	var companies []models.Company
 
-	row := m.DB.QueryRowContext(ctx, "select user_id, password from users where lower(email)=lower($1)", email)
-	err := row.Scan(&id, &hashedPassword)
+	query := `
+	select company.id, company.company_name, company.url, company.address, 
+	company.industry, company.size, created_at, updated_at
+	from companies cmp
+	`
+	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
-		log.Println("func Authenticate, error 1")
-		return "", "", err
+		return companies, err
 	}
+	defer rows.Close()
 
-	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
-	if err == bcrypt.ErrMismatchedHashAndPassword {
-		log.Println("func Authenticate, error 2")
-		return "", "", errors.New("incorrect password")
-	} else if err != nil {
-		log.Println("func Authenticate, error 3")
-		return "", "", err
+	for rows.Next() {
+		var i models.Company
+		err := rows.Scan(
+			&i.ID,
+			&i.CompanyName,
+			&i.URL,
+			&i.Address,
+			&i.Industry,
+			&i.Size,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		)
+		if err != nil {
+			return companies, err
+		}
+		companies = append(companies, i)
 	}
-	log.Println("func Authenticate, no error")
-	return id, hashedPassword, nil
+	if err = rows.Err(); err != nil {
+		return companies, err
+	}
+	return companies, nil
+}
+
+func (m *postgresDBRepo) UpdateContactByID(c models.Contact) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `update contacts (company_id =$1, first_name=$2, last_name=$3, job_title=$4, 
+	email=$5, mobile_phone=$6, work_phone=$7, phone_3=$8, linkedin=$9, github=$10, 
+	website=$11, notes=$12, description=$13, objective=$14, timeline=$15, favorite=$16, updated_at=$17) 
+	where id = $18
+	`
+	//validate this work right
+	c.ContactTimeLine = utils.TimeLineBuilderJSON(time.Now(), "Contact Updated")
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		c.CompanyID, // I need to think about this. I need to check if it changed, then add new company or update
+		c.FirstName,
+		c.LastName,
+		c.JobTitle,
+		c.Email,
+		c.MobilePhone,
+		c.WorkPhone,
+		c.Phone3,
+		c.Linkedin,
+		c.Github,
+		c.Website,
+		c.Notes,
+		c.Description,
+		c.Objective,
+		c.ContactTimeLine,
+		c.Favorite,
+		time.Now(),
+		c.ID,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 //CreateNewUser
