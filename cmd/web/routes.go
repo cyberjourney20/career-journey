@@ -22,13 +22,13 @@ func routes(app *config.AppConfig) http.Handler {
 
 	mux.Get("/user/login", handlers.Repo.Login)
 	mux.Post("/user/login-post", handlers.Repo.PostShowLogin)
-	mux.Get("/user/logout", handlers.Repo.Logout)
+	mux.Get("/user/logout", handlers.Repo.UserLogout)
 	mux.Get("/user/Register", handlers.Repo.Register)
 
 	mux.Get("/dashboard", handlers.Repo.Dashboard)
 	mux.Get("/skill-tracker", handlers.Repo.SkillTracker)
 	mux.Get("/cert-tracker", handlers.Repo.CertTracker)
-	mux.Get("/application-tracker", handlers.Repo.SkillTracker)
+	mux.Get("/application-manager", handlers.Repo.ApplicationManager)
 	mux.Get("/job-search-manager", handlers.Repo.JobSearchManager)
 	mux.Get("/resume-manager", handlers.Repo.ResumeManager)
 

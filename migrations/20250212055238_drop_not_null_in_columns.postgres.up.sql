@@ -1,0 +1,20 @@
+-- certs
+ALTER TABLE certs ALTER COLUMN cost DROP NOT NULL;
+-- companies
+ALTER TABLE companies ALTER COLUMN url DROP NOT NULL;
+ALTER TABLE companies ALTER COLUMN address DROP NOT NULL;
+ALTER TABLE companies ALTER COLUMN industry DROP NOT NULL;
+ALTER TABLE companies ALTER COLUMN size DROP NOT NULL;
+-- job_listings
+ALTER TABLE job_listings ALTER COLUMN work_setting DROP NOT NULL;
+ALTER TABLE job_listings ALTER COLUMN req_yoe DROP NOT NULL;
+ALTER TABLE job_listings ALTER COLUMN req_skills DROP NOT NULL;
+ALTER TABLE job_listings ALTER COLUMN req_certs DROP NOT NULL;
+ALTER TABLE job_listings ALTER COLUMN low_pay DROP NOT NULL;
+ALTER TABLE job_listings ALTER COLUMN target_pay DROP NOT NULL;
+ALTER TABLE job_listings ALTER COLUMN high_pay DROP NOT NULL;
+-- skills
+ALTER TABLE skills ALTER COLUMN demand DROP NOT NULL;
+-- users
+ALTER TABLE users ALTER COLUMN skills DROP NOT NULL;
+ALTER TABLE users ALTER COLUMN certs DROP NOT NULL;

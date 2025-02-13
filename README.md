@@ -2,7 +2,7 @@
 Career Journey is a Golang based web app to help users organize thier job hunt. 
 
 ## Build version 0.01
-The current build is pre-alpha. It has no actual functionality for data interaction beyond prepopulated psudo-data to ensure functionality with the databse. 
+The current build is pre-alpha. It has limited functionality for data interaction beyond prepopulated psudo-data to ensure functionality with the databse. 
 
 ## Requirements
 - Uses PostgreSQL: This can be swapped out to a DB of your choice with slight modifications. 
@@ -38,4 +38,4 @@ go build -o career-journey.exe ./cmd/web
 - Sebastiaan Stam (plane over city)
 - Josh Hild (Ny City with Reflections in rain)
 - Nextvoyage (City Night)
-
+s

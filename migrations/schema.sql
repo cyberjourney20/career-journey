@@ -86,7 +86,7 @@ CREATE TABLE public.certs (
     cert_body character varying(255) DEFAULT ''::character varying NOT NULL,
     url character varying(255) DEFAULT ''::character varying NOT NULL,
     title character varying(255) DEFAULT ''::character varying NOT NULL,
-    cost integer DEFAULT 0 NOT NULL,
+    cost integer DEFAULT 0,
     description character varying(255) DEFAULT ''::character varying NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
@@ -124,10 +124,10 @@ ALTER SEQUENCE public.certs_id_seq OWNED BY public.certs.id;
 CREATE TABLE public.companies (
     id integer NOT NULL,
     company_name character varying(255) DEFAULT ''::character varying NOT NULL,
-    url character varying(255) DEFAULT ''::character varying NOT NULL,
-    address character varying(255) DEFAULT ''::character varying NOT NULL,
-    industry character varying(255) DEFAULT ''::character varying NOT NULL,
-    size character varying(255) DEFAULT ''::character varying NOT NULL,
+    url character varying(255) DEFAULT ''::character varying,
+    address character varying(255) DEFAULT ''::character varying,
+    industry character varying(255) DEFAULT ''::character varying,
+    size character varying(255) DEFAULT ''::character varying,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -181,7 +181,7 @@ CREATE TABLE public.contacts (
     timeline jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
-    favorite boolean
+    favorite boolean DEFAULT false NOT NULL
 );
 
 
@@ -260,13 +260,13 @@ CREATE TABLE public.job_listings (
     url character varying(255) DEFAULT ''::character varying NOT NULL,
     job_title character varying(255) DEFAULT ''::character varying NOT NULL,
     job_description character varying(255) DEFAULT ''::character varying NOT NULL,
-    work_setting integer DEFAULT 0 NOT NULL,
-    req_yoe integer DEFAULT 0 NOT NULL,
-    req_skills jsonb DEFAULT '{}'::jsonb NOT NULL,
-    req_certs jsonb DEFAULT '{}'::jsonb NOT NULL,
-    low_pay money NOT NULL,
-    target_pay money NOT NULL,
-    high_pay money NOT NULL,
+    work_setting integer DEFAULT 0,
+    req_yoe integer DEFAULT 0,
+    req_skills jsonb DEFAULT '{}'::jsonb,
+    req_certs jsonb DEFAULT '{}'::jsonb,
+    low_pay money,
+    target_pay money,
+    high_pay money,
     location_city character varying(255) DEFAULT ''::character varying NOT NULL,
     location_state character varying(255) DEFAULT ''::character varying NOT NULL,
     location_zip character varying(255) DEFAULT ''::character varying NOT NULL,
@@ -322,7 +322,7 @@ CREATE TABLE public.skills (
     skill_name character varying(255) DEFAULT ''::character varying NOT NULL,
     url character varying(255) DEFAULT ''::character varying NOT NULL,
     description character varying(255) DEFAULT ''::character varying NOT NULL,
-    demand jsonb DEFAULT '{}'::jsonb NOT NULL,
+    demand jsonb DEFAULT '{}'::jsonb,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -362,8 +362,8 @@ CREATE TABLE public.users (
     last_name character varying(255) DEFAULT ''::character varying NOT NULL,
     email character varying(255) DEFAULT ''::character varying NOT NULL,
     password character varying(60) NOT NULL,
-    skills jsonb DEFAULT '{}'::jsonb NOT NULL,
-    certs jsonb DEFAULT '{}'::jsonb NOT NULL,
+    skills jsonb DEFAULT '{}'::jsonb,
+    certs jsonb DEFAULT '{}'::jsonb,
     preferences jsonb DEFAULT '{}'::jsonb NOT NULL,
     access_level integer DEFAULT 0 NOT NULL,
     created_at timestamp without time zone NOT NULL,

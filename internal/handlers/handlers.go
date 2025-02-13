@@ -49,6 +49,18 @@ func NewHandlers(r *Repository) {
 	Repo = r
 }
 
+// Availability page handler
+func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
+	if m.IsLoggedIn(w, r) {
+		m.App.Session.Put(r.Context(), "flash", "You are already logged in")
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	}
+	render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+
+}
+
 func (m *Repository) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	id := m.App.Session.Get(r.Context(), "user_id")
 	if id == nil {
@@ -57,11 +69,19 @@ func (m *Repository) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	return true
 }
 
+// Logout logs a user out
 func (m *Repository) UserLogout(w http.ResponseWriter, r *http.Request) {
-	m.App.Session.Put(r.Context(), "user_id", nil)
-	m.App.Session.Put(r.Context(), "error", "You have been logged out")
+	_ = m.App.Session.Destroy(r.Context())
+	_ = m.App.Session.RenewToken(r.Context())
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+// func (m *Repository) UserLogout(w http.ResponseWriter, r *http.Request) {
+// 	m.App.Session.Put(r.Context(), "user_id", nil)
+// 	m.App.Session.Put(r.Context(), "error", "You have been logged out")
+// 	http.Redirect(w, r, "/", http.StatusSeeOther)
+// }
 
 // Home renders the home page
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
@@ -96,10 +116,6 @@ func (m *Repository) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 // Contacts page handler
 func (m *Repository) ContactsAll(w http.ResponseWriter, r *http.Request) {
-	// if !m.IsLoggedIn(w, r) {
-	// 	m.App.Session.Put(r.Context(), "error", "You Must Login to Access This Page")
-	// 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-	// }
 
 	contacts, err := m.DB.GetAllContacts()
 	//fmt.Println(contacts.FirstName, "Printed in Contacts Handler")
@@ -117,10 +133,7 @@ func (m *Repository) ContactsAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) ContactsNew(w http.ResponseWriter, r *http.Request) {
-	// if !m.IsLoggedIn(w, r) {
-	// 	m.App.Session.Put(r.Context(), "error", "You Must Login to Access This Page")
-	// 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-	// }
+
 	fmt.Print("GPT Version, This page is updatated!")
 	var ctID int
 	var contact models.Contact
@@ -158,7 +171,7 @@ func (m *Repository) ContactsNew(w http.ResponseWriter, r *http.Request) {
 		editMode = true
 		fmt.Println("contact.FirstName:", contact.FirstName)
 	} else {
-		contact = models.Contact{} // This ensures contact is initialized when editMode is false
+		contact = models.Contact{}
 	}
 
 	stringMap := make(map[string]string)
@@ -181,10 +194,7 @@ func (m *Repository) ContactsNew(w http.ResponseWriter, r *http.Request) {
 
 // ContactsNewPost
 func (m *Repository) ContactsNewPost(w http.ResponseWriter, r *http.Request) {
-	// if !m.IsLoggedIn(w, r) {
-	// 	m.App.Session.Put(r.Context(), "error", "You Must Login to Complete Thie Action")
-	// 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-	// }
+
 	var contact models.Contact
 
 	contact, ok := m.App.Session.Get(r.Context(), "contact").(models.Contact)
@@ -252,10 +262,6 @@ func (m *Repository) ContactsNewPost(w http.ResponseWriter, r *http.Request) {
 	//render.Template(w, r, "contacts.page.tmpl", &models.TemplateData{})
 }
 
-// func (m *Repository) ContactsNewJSON(w http.ResponseWriter, r *http.Request) {
-// 	render.Template(w, r, "contacts-new-JSON.page.tmpl", &models.TemplateData{})
-// }
-
 func (m *Repository) ContactViewByID(w http.ResponseWriter, r *http.Request) {
 
 	exploded := strings.Split(r.RequestURI, "/")
@@ -296,48 +302,20 @@ func (m *Repository) ContactViewByID(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// ContactViewByIDPost posts changes to notes and description
 func (m *Repository) ContactViewByIDPost(w http.ResponseWriter, r *http.Request) {
-	// n := r.Form.Get("notes")
-	// d := r.Form.Get("description")
-
-	render.Template(w, r, "contacts-view.page.tmpl", &models.TemplateData{})
+	render.Template(w, r, "#", &models.TemplateData{})
 }
 
-// ContactEditByID handles the contacted edit form
-func (m *Repository) ContactEditByID(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{})
-}
+// Application page handler
+func (m *Repository) ApplicationManager(w http.ResponseWriter, r *http.Request) {
+	//get all applications by user ID
 
-// ContactEditByIDPost posts changes to a contact
-func (m *Repository) ContactEditByIDPost(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{})
-}
-
-func (m *Repository) ContactsUpdateJSON(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "contacts-update-JSON.page.tmpl", &models.TemplateData{})
+	render.Template(w, r, "application-manager.page.tmpl", &models.TemplateData{})
 }
 
 // Skill-tracker page handler
 func (m *Repository) SkillTracker(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "skill-tracker.page.tmpl", &models.TemplateData{})
-}
-
-// Availability page handler
-func (m *Repository) Applications(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "applications.page.tmpl", &models.TemplateData{})
-}
-
-// Availability page handler
-func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
-	if m.IsLoggedIn(w, r) {
-		m.App.Session.Put(r.Context(), "flash", "You are already logged in")
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-	}
-	render.Template(w, r, "login.page.tmpl", &models.TemplateData{
-		Form: forms.New(nil),
-	})
-
 }
 
 func (m *Repository) Register(w http.ResponseWriter, r *http.Request) {
@@ -386,14 +364,6 @@ func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request) {
 	m.App.Session.Put(r.Context(), "user_id", user_id)
 	m.App.Session.Put(r.Context(), "flash", "Logged in successfully")
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-}
-
-// Logout logs a user out
-func (m *Repository) Logout(w http.ResponseWriter, r *http.Request) {
-	_ = m.App.Session.Destroy(r.Context())
-	_ = m.App.Session.RenewToken(r.Context())
-
-	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
 func (m *Repository) CertTracker(w http.ResponseWriter, r *http.Request) {
