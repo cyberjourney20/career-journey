@@ -20,22 +20,38 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Get("/", handlers.Repo.Home)
 	mux.Get("/about", handlers.Repo.About)
 
-	mux.Get("/user/login", handlers.Repo.Login)
-	mux.Post("/user/login-post", handlers.Repo.PostShowLogin)
-	mux.Get("/user/logout", handlers.Repo.UserLogout)
-	mux.Get("/user/register", handlers.Repo.Register)
-	mux.Post("/user/register", handlers.Repo.PostRegister)
+	mux.Route("/user", func(mux chi.Router) {
+		mux.Get("/login", handlers.Repo.Login)
+		mux.Post("/login", handlers.Repo.PostShowLogin)
+		mux.Get("/logout", handlers.Repo.UserLogout)
+		mux.Get("/register", handlers.Repo.Register)
+		mux.Post("/register", handlers.Repo.PostRegister)
+	})
 
-	mux.Get("/dashboard", handlers.Repo.Dashboard)
-	mux.Get("/skill-tracker", handlers.Repo.SkillTracker)
-	mux.Get("/cert-tracker", handlers.Repo.CertTracker)
-	mux.Get("/application-manager", handlers.Repo.ApplicationManager)
-	mux.Get("/job-search-manager", handlers.Repo.JobSearchManager)
-	mux.Get("/resume-manager", handlers.Repo.ResumeManager)
+	mux.Route("/my", func(mux chi.Router) {
+		mux.Use(Auth)
+		mux.Get("/dashboard", handlers.Repo.Dashboard)
+		mux.Get("/resumes", handlers.Repo.ViewResumes)
+		mux.Get("/applications", handlers.Repo.ViewApplications)
+		mux.Get("/profile", handlers.Repo.UserEditProfile)
+		mux.Get("/skills", handlers.Repo.SkillTracker)
+		mux.Get("/certifications", handlers.Repo.CertTracker)
+	})
+
+	mux.Route("/jobs", func(mux chi.Router) {
+		mux.Use(Auth)
+		mux.Get("/", handlers.Repo.JobListingAll)
+		mux.Get("/search-manager", handlers.Repo.JobSearchManager)
+		mux.Get("/all-listings", handlers.Repo.JobListingAll)
+		mux.Get("/view/{id}", handlers.Repo.JobListingViewByID)
+		mux.Get("/new", handlers.Repo.JobListingNew)
+	})
 
 	mux.Route("/admin", func(mux chi.Router) {
 		mux.Use(Auth)
+		mux.Get("/", handlers.Repo.AdminDashboard)
 	})
+
 	mux.Route("/contacts", func(mux chi.Router) {
 		mux.Use(Auth)
 		mux.Get("/", handlers.Repo.ContactsAll)

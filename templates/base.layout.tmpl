@@ -171,38 +171,40 @@
 			
 
 			<li class="nav-item">
-			  <a class="nav-link" href="/dashboard">
+			  <a class="nav-link" href="/my/dashboard">
 				<i class="ti-shield menu-icon"></i>
 				<span class="menu-title">Dashboard</span>
 			  </a>
 			</li>
 
-			<li class="nav-item">
-				<a class="nav-link" href="/application-manager">
-				  <i class="ti-view-list-alt menu-icon"></i>
-				  <span class="menu-title">Applications</span>
-				</a>
-			</li> 
-
-			<li class="nav-item">
-				<a class="nav-link" href="/contacts">
-				  <i class="ti-user menu-icon"></i>
-				  <span class="menu-title">Contacts</span>
-				</a>
-			  </li>
-
-			  <li class="nav-item">
-				<a class="nav-link" href="/job-search-manager">
+			<!-- <li class="nav-item">
+				<a class="nav-link" href="/jobs/search-manager">
 				  <i class="ti-calendar menu-icon"></i>
 				  <span class="menu-title">Job Search Manager</span>
 				</a>
-			  </li>
+			</li> -->
 
-			  <li class="nav-item">
-				<a class="nav-link" href="/resume-manager">
-				  <i class="ti-agenda menu-icon"></i>
-				  <span class="menu-title">Resume Manager</span>
+			<li class="nav-item">
+				<a class="nav-link" href="/contacts">
+					<i class="ti-user menu-icon"></i>
+					<span class="menu-title">Contacts</span>
 				</a>
+			</li>
+
+			<li class="nav-item">
+				<a class="nav-link" data-bs-toggle="collapse" href="#jobsearch" aria-expanded="false" aria-controls="ui-basic">
+				  <i class="ti-bookmark-alt menu-icon"></i>
+				  <span class="menu-title">Job Search</span>
+				  <i class="menu-arrow"></i>
+				</a>
+				<div class="collapse" id="jobsearch">
+				  <ul class="nav flex-column sub-menu">
+					<li class="nav-item"> <a class="nav-link" href="/jobs/search-manager">Job Search Manager</a></li>
+					<li class="nav-item"> <a class="nav-link" href="/jobs/listings">Job Listings</a></li>
+					<li class="nav-item"> <a class="nav-link" href="/my/resumes">Resumes</a></li>
+					<li class="nav-item"> <a class="nav-link" href="/my/applications">Applications</a></li>
+				  </ul>
+				</div>
 			  </li>
 
 			<li class="nav-item">
@@ -213,13 +215,14 @@
 			  </a>
 			  <div class="collapse" id="profile">
 				<ul class="nav flex-column sub-menu">
-				  <li class="nav-item"> <a class="nav-link" href="/skill-tracker">Skills</a></li>
-				  <li class="nav-item"> <a class="nav-link" href="/cert-tracker">Certifications</a></li>
+				  <li class="nav-item"> <a class="nav-link" href="/my/skills">Skills</a></li>
+				  <li class="nav-item"> <a class="nav-link" href="/my/certifications">Certifications</a></li>
+				  <li class="nav-item"> <a class="nav-link" href="/my/schedule">Schedule</a></li>
+				  <li class="nav-item"> <a class="nav-link" href="/my/gap-analysis">Gap Analysis</a></li>
+				  <li class="nav-item"> <a class="nav-link" href="/my/diary">Job Hunt Diary</a></li>
 				</ul>
 			  </div>
 			</li>
-		
-			
 
 			<li class="nav-item">
 			  <a class="nav-link" data-bs-toggle="collapse" href="#resources" aria-expanded="false" aria-controls="auth">

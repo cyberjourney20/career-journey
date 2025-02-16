@@ -270,8 +270,8 @@ CREATE TABLE public.job_listings (
     location_city character varying(255) DEFAULT ''::character varying NOT NULL,
     location_state character varying(255) DEFAULT ''::character varying NOT NULL,
     location_zip character varying(255) DEFAULT ''::character varying NOT NULL,
-    date_posted date NOT NULL,
-    date_closing date NOT NULL,
+    date_posted date,
+    date_closing date,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );

@@ -464,6 +464,57 @@ func (m *postgresDBRepo) AddNewUser(u models.User) error {
 	return nil
 }
 
+func (m *postgresDBRepo) GetAllJobListing(uuid string) ([]models.JobListing, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var listings []models.JobListing
+
+	query := `
+	select l.id, l.url, l.job_title, l.req_yoe, l.low_pay, l.target_pay, l.high_pay, l.location_city, 
+	l.location_state, l.created_at, l.updated_at, cp.id, cp.url, cp.company_name 
+	from job_listings l
+	left join companies cp on l.company_id=cp.id
+	where l.user_id = $1`
+
+	// Get UserID in QueryContext call from session
+	fmt.Println("running GetAllJobListing, uuid: ", uuid)
+	rows, err := m.DB.QueryContext(ctx, query, uuid)
+	if err != nil {
+		return listings, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var i models.JobListing
+		err := rows.Scan(
+			&i.ID,
+			&i.URL,
+			&i.JobTitle,
+			&i.ReqYOE,
+			&i.LowPay,
+			&i.TargetPay,
+			&i.HighPay,
+			&i.Location.City,
+			&i.Location.State,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CompanyID,
+			&i.Company.URL,
+			&i.Company.CompanyName,
+		)
+		if err != nil {
+			return listings, err
+		}
+		// add an if statement to only check for future reservations.
+		listings = append(listings, i)
+	}
+	if err = rows.Err(); err != nil {
+		return listings, err
+	}
+	return listings, nil
+}
+
 //UpdateUser
 
 //CreateContact

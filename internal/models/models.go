@@ -68,10 +68,11 @@ type JobListing struct {
 	ReqYOE         int
 	ReqSkills      []ReferenceSkills
 	ReqCerts       []ReferenceCerts
-	LowPay         int
-	HighPay        int
-	TargetPay      int
+	LowPay         string
+	HighPay        string
+	TargetPay      string
 	Location       Location
+	Company        Company
 	Posted         time.Time
 	Closes         time.Time
 	CreatedAt      time.Time

@@ -8,6 +8,7 @@ Job Search Manager
 {{end}}
 
 {{define "content"}}
+{{$j := index .Data "listings"}}
 <div class="row">
   <div class="col-lg-12 grid-margin stretch-card container-fluid">
     <div class="card bg-light">
@@ -60,7 +61,6 @@ Job Search Manager
               <div class="card-body ">
                 <div class="table-responsive grid-margin">
                   <table class="table table-hover " id="fav-contacts">
-
                     <thead>
                       <tr>
                         <th>Applied</th>
@@ -75,18 +75,18 @@ Job Search Manager
                     </thead>
           
                     <tbody>
-                      
+                      {{range $j}}
                       <tr>
-                     
                         <td><i class="ti-star"></i></td>
-                        <td> Company</td>
-                        <td>Job Title</td>
-                        <td>City, State</td>
-                        <td>$100,000-120,000</td>
-                        <td>date added</td>
-                        <td>href contact id</td>
-                        <td type="button" class="btn btn-inverse-primary ti-pencil"  
-                        onclick="location.href='/'"></td>
+                        <td>{{.Company.CompanyName}}</td>
+                        <td>{{.JobTitle}}</td>
+                        <td>{{.Location.City}}, {{.Location.State}}</td>
+                        <td>{{.LowPay}} - {{.HighPay}}</td>
+                        <td>Normalize</td>
+                        <td>Add Function</td>
+                        <td type="button" class="btn btn-inverse-primary ti-pencil"  onclick="location.href='#'"></td>
+                      </tr>
+                      {{end}}
                       </tr>
                     </tbody>
                   </table>
