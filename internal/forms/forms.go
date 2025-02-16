@@ -67,3 +67,12 @@ func (f *Form) LengthTest(field string, minLength, maxLength int) bool {
 	}
 	return true
 }
+
+func (f *Form) PasswordsMatch(p1, p2 string) bool {
+	fmt.Println("PasswordMAtch", p1, p2)
+	if p1 != p2 {
+		f.Errors.Add("password_2", "Passwords do not match")
+		return false
+	}
+	return true
+}

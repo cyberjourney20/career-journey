@@ -55,12 +55,13 @@ func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 		m.App.Session.Put(r.Context(), "flash", "You are already logged in")
 		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 	}
-	render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+	render.Template(w, r, "user-login.page.tmpl", &models.TemplateData{
 		Form: forms.New(nil),
 	})
 
 }
 
+// clean this up, it dosent need the repository or response writer.
 func (m *Repository) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	id := m.App.Session.Get(r.Context(), "user_id")
 	if id == nil {
@@ -93,6 +94,16 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "about.page.tmpl", &models.TemplateData{})
 }
 
+func (m *Repository) ResourcesJob(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "resources-job.page.tmpl", &models.TemplateData{})
+}
+func (m *Repository) ResourcesInterview(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "resources-interview.page.tmpl", &models.TemplateData{})
+}
+func (m *Repository) ResourcesResume(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "resources-resume.page.tmpl", &models.TemplateData{})
+}
+
 // Dashboard is the users home page handler
 func (m *Repository) Dashboard(w http.ResponseWriter, r *http.Request) {
 	if !m.IsLoggedIn(w, r) {
@@ -116,7 +127,7 @@ func (m *Repository) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 // Contacts page handler
 func (m *Repository) ContactsAll(w http.ResponseWriter, r *http.Request) {
-
+	fmt.Print("ContactAll Running")
 	contacts, err := m.DB.GetAllContacts()
 	//fmt.Println(contacts.FirstName, "Printed in Contacts Handler")
 	if err != nil {
@@ -127,7 +138,7 @@ func (m *Repository) ContactsAll(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
 	data["contacts"] = contacts
 
-	render.Template(w, r, "contacts.page.tmpl", &models.TemplateData{
+	render.Template(w, r, "contacts-all.page.tmpl", &models.TemplateData{
 		Data: data,
 	})
 }
@@ -306,6 +317,18 @@ func (m *Repository) ContactViewByIDPost(w http.ResponseWriter, r *http.Request)
 	render.Template(w, r, "#", &models.TemplateData{})
 }
 
+func (m *Repository) JobLintingViewAll(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "job-listing-all.page.tmpl", &models.TemplateData{})
+}
+
+func (m *Repository) JobLintingNew(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "job-listing-new.page.tmpl", &models.TemplateData{})
+}
+
+func (m *Repository) JobListingViewByID(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "job-listing-view.page.tmpl", &models.TemplateData{})
+}
+
 // Application page handler
 func (m *Repository) ApplicationManager(w http.ResponseWriter, r *http.Request) {
 	//get all applications by user ID
@@ -319,7 +342,103 @@ func (m *Repository) SkillTracker(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) Register(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "user-register.page.tmpl", &models.TemplateData{})
+
+	if m.IsLoggedIn(w, r) {
+		m.App.Session.Put(r.Context(), "flash", "You are already logged in")
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	}
+
+	render.Template(w, r, "user-register.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+
+}
+
+func (m *Repository) PostRegister(w http.ResponseWriter, r *http.Request) {
+	//collect data
+	//make sure it is unique username
+	//create new user in DB
+	//return to login page & flash message
+	log.Println("PostRegister Running")
+	var err error
+	var exists bool
+	// newUser, ok := m.App.Session.Get(r.Context(), "reservation").(models.User)
+	// if !ok {
+	// 	m.App.Session.Put(r.Context(), "error", "can't get user from session")
+	// 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	// 	return
+	// }
+
+	// err := r.ParseForm()
+	// if err != nil {
+	// 	m.App.Session.Put(r.Context(), "error", "can't parse form")
+	// 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	// 	return
+	// }
+	newUser := models.User{
+		FirstName: r.Form.Get("first_name"),
+		LastName:  r.Form.Get("last_name"),
+		Email:     r.Form.Get("email"),
+		Password:  r.Form.Get("password"),
+	}
+
+	form := forms.New(r.PostForm)
+
+	form.Required("first_name", "last_name", "email", "password", "password_2")
+	form.LengthTest("first_name", 3, 64)
+	form.LengthTest("last_name", 3, 64)
+	form.LengthTest("password", 12, 64)
+	form.PasswordsMatch(form.Get("password"), form.Get("password_2"))
+	form.IsEmail("email")
+
+	exists, err = m.DB.UserExists(newUser.Email)
+	if err != nil {
+		log.Println("Error checking user existence:", err)
+		m.App.Session.Put(r.Context(), "warning", "Database error, please try again.")
+		render.Template(w, r, "user-register.page.tmpl", &models.TemplateData{
+			Form: form,
+			Data: map[string]interface{}{
+				"newUser": newUser,
+			},
+		})
+		return
+	}
+
+	if exists {
+		form.Errors.Add("email", "This username is unavailable")
+		render.Template(w, r, "user-register.page.tmpl", &models.TemplateData{
+			Form: form,
+			Data: map[string]interface{}{
+				"newUser": newUser,
+			},
+		})
+		return
+	}
+
+	if !form.Valid() {
+		// Re-render registration page with form errors and user data
+		log.Println("form != Valid")
+		render.Template(w, r, "user-register.page.tmpl", &models.TemplateData{
+			Form: form,
+			Data: map[string]interface{}{
+				"newUser": newUser, // Retain user inputs
+			},
+		})
+		return
+	}
+
+	fmt.Println("exists: ...")
+
+	err = m.DB.AddNewUser(newUser)
+	if err != nil {
+		log.Println("error adding new user to database", err)
+		m.App.Session.Put(r.Context(), "warning", "error adding new user to database")
+		http.Redirect(w, r, "/user/register", http.StatusSeeOther)
+		return
+	}
+	log.Println("AddNewUser Ran maybe?")
+	m.App.Session.Put(r.Context(), "flash", "Your account was created successfully, Please login.")
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
 // PostShowLogin handles logging user in
@@ -374,13 +493,4 @@ func (m *Repository) JobSearchManager(w http.ResponseWriter, r *http.Request) {
 }
 func (m *Repository) ResumeManager(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "resume-manager.page.tmpl", &models.TemplateData{})
-}
-func (m *Repository) ResourcesJob(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "job-resources.page.tmpl", &models.TemplateData{})
-}
-func (m *Repository) ResourcesInterview(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "interview-prep.page.tmpl", &models.TemplateData{})
-}
-func (m *Repository) ResourcesResume(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "resume.page.tmpl", &models.TemplateData{})
 }

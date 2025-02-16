@@ -13,11 +13,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (m *postgresDBRepo) AllUsers() bool {
-	return true
-}
+// func (m *postgresDBRepo) AllUsers() bool {
+// 	return true
+// }
 
-// Authenticate authenticates a user
+// Authenticate authenticates a user by comparing password hash to stored password hash
 func (m *postgresDBRepo) Authenticate(email, testPassword string) (string, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -44,6 +44,7 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string) (string, strin
 	return id, hashedPassword, nil
 }
 
+// GetAllContacts gets all contacts associated with a user's UUID
 func (m *postgresDBRepo) GetAllContacts() ([]models.Contact, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -100,6 +101,7 @@ func (m *postgresDBRepo) GetAllContacts() ([]models.Contact, error) {
 	return contacts, nil
 }
 
+// GetAllContacts gets all contacts identified as a favorite associated with a user's UUID
 func (m *postgresDBRepo) GetFavoriteContacts() ([]models.Contact, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -156,6 +158,7 @@ func (m *postgresDBRepo) GetFavoriteContacts() ([]models.Contact, error) {
 	return contacts, nil
 }
 
+// GetContactByID gets a contact by thier ID
 func (m *postgresDBRepo) GetContactByID(id int, user_id string) (models.Contact, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -326,6 +329,7 @@ func (m *postgresDBRepo) AddNewContact(c models.Contact, user_id string) (int, e
 	return 1, nil
 }
 
+// Get all Companies returns a slice of models.company with all companies
 func (m *postgresDBRepo) GetAllCompanies() ([]models.Company, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -366,6 +370,7 @@ func (m *postgresDBRepo) GetAllCompanies() ([]models.Company, error) {
 	return companies, nil
 }
 
+// UdateContactByID updates a contact details by ID
 func (m *postgresDBRepo) UpdateContactByID(c models.Contact) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -405,7 +410,60 @@ func (m *postgresDBRepo) UpdateContactByID(c models.Contact) error {
 
 }
 
-//CreateNewUser
+// UserExists checks to see if a username is already registered in the DB
+func (m *postgresDBRepo) UserExists(email string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var dbEmail string
+
+	row := m.DB.QueryRowContext(ctx, "select email from users where lower(email)=lower($1)", email)
+	err := row.Scan(&dbEmail)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			fmt.Println("UserExists sql.ErrNoRows")
+			return false, nil // No user found, which means email doesn't exist
+		}
+		fmt.Println("UserExists Error 2")
+		return false, err // Some other error occurred
+	}
+	fmt.Println("UserExists No Error")
+	return true, nil // User found, email exists
+}
+
+// AddNewUser adds a new user to the database
+func (m *postgresDBRepo) AddNewUser(u models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var err error
+	bpass := []byte(u.Password)
+	phash, err := bcrypt.GenerateFromPassword([]byte(bpass), 12)
+	if err != nil {
+		fmt.Println("AddNewUser in in bcrypt", err)
+		return err
+	}
+
+	stmt := `
+	insert into users (first_name, last_name, email, password, created_at, updated_at) 
+	values ($1, $2, $3, $4, $5, $6)
+	`
+	_, err = m.DB.ExecContext(ctx, stmt,
+		u.FirstName,
+		u.LastName,
+		u.Email,
+		phash,
+		time.Now(),
+		time.Now(),
+	)
+	if err != nil {
+		fmt.Println("Error in AddNewUser insert user", err)
+		return err
+	}
+	fmt.Println("AddNewUser no error")
+	return nil
+}
+
 //UpdateUser
 
 //CreateContact

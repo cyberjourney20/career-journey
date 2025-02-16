@@ -10,63 +10,96 @@ Job Search Manager
 {{define "content"}}
 <div class="row">
   <div class="col-lg-12 grid-margin stretch-card container-fluid">
-    
     <div class="card bg-light">
       <div class="card-body">
         <p class="display-3 text-center">Application Board</p><hr><br>
         <div class="row">
-
           <div class="col-md-3">
             <p class="display-4 text-center">Pending</p>
             <div class="card">
-                <div class="card-body">
-                    
-
-                </div>
+              <div class="card-body">
+              </div>
             </div>
           </div>
-
           <div class="col-md-3">
             <p class="display-4 text-center">Applied</p>
             <div class="card">
-                <div class="card-body">
-                    
-
-                </div>
+              <div class="card-body">
+              </div>
             </div>
           </div>
-
           <div class="col-md-3">
             <p class="display-4 text-center">Interview</p>
             <div class="card">
-                <div class="card-body">
-                    
-
-                </div>
+              <div class="card-body">
+              </div>
             </div>
           </div>
-
           <div class="col-md-3">
             <p class="display-4 text-center">Rejected</p>
             <div class="card">
-                <div class="card-body">
-                    
-
-                </div>
+              <div class="card-body">
+              </div>
             </div>
           </div>
-
         </div>
-
-<br><hr> 
-
-
-              
-            </div>
-        </div>
+        <br><hr> 
+      </div>
     </div>
+  </div>
 </div>
 
+<div class="row">
+  <div class="col-lg-12 grid-margin stretch-card container-fluid">
+    <div class="card bg-light">
+      <div class="card-body ">
+        <p class="display-3 text-center">Job Listings</p><hr><br>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-body ">
+                <div class="table-responsive grid-margin">
+                  <table class="table table-hover " id="fav-contacts">
+
+                    <thead>
+                      <tr>
+                        <th>Applied</th>
+                        <th>Company</th>
+                        <th>Job Title</th>
+                        <th>Location</th>
+                        <th>Pay Range</th>
+                        <th>Date Added</th>
+                        <th>Point of Contact</th>
+                        
+                      </tr>
+                    </thead>
+          
+                    <tbody>
+                      
+                      <tr>
+                     
+                        <td><i class="ti-star"></i></td>
+                        <td> Company</td>
+                        <td>Job Title</td>
+                        <td>City, State</td>
+                        <td>$100,000-120,000</td>
+                        <td>date added</td>
+                        <td>href contact id</td>
+                        <td type="button" class="btn btn-inverse-primary ti-pencil"  
+                        onclick="location.href='/'"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+      </div>
+    </div>
+  </div>
+</div>
 
 {{end}}
 

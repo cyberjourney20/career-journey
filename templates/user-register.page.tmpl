@@ -1,14 +1,115 @@
-{{template "base" .}}
+{{template "useractions" .}}
 
 {{define "css"}}
-{{end}}
-
-{{define "page-title"}}
-User Registration Page
+<style>
+    .auth .login-half-bg {
+    background: url(/static/images/pexels-josh-hild-1270765-2422588.jpg);
+    background-size: cover;
+    }
+</style>
 {{end}}
 
 {{define "content"}}
+<div class="auth-form-transparent text-left p-3">
+    <div class="brand-logo">
+        <img src="/static/images/cj_logo_black.png" alt="logo">
+    </div>
+    <h3>Career Journey</h3>
+    <p class="display-3">Registration Page</p>
+    
+    <form class="pt-3" method="post" action="/user/register" novalidate>
+        {{$u := index .Data "newUser"}}
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <div class="form-group">
+
+            <label for="InputFName">First Name</label> 
+            {{with .Form.Errors.Get "first_name"}}
+            <label class="text-danger">{{.}}</label>
+            {{end}}
+            <div class="input-group">
+            <div class="input-group-prepend bg-transparent">
+                <span class="input-group-text bg-transparent border-right-0">
+                <i class="ti-user text-primary" ></i>
+                </span>
+            </div>
+            <input type="text" name="first_name" class="form-control form-control-lg border-left-0 needs-validation" 
+            required autocomplete="off" {{with .Form.Errors.Get "first_name"}} is-invalid {{end}} id="first_name" placeholder="first_name" value="{{$u.FirstName}}">
+            </div>
+
+            <label for="InputLName">Last Name</label> 
+            {{with .Form.Errors.Get "last_name"}}
+            <label class="text-danger">{{.}}</label>
+            {{end}}
+            <div class="input-group">
+            <div class="input-group-prepend bg-transparent">
+                <span class="input-group-text bg-transparent border-right-0">
+                <i class="ti-user text-primary" ></i>
+                </span>
+            </div>
+            <input type="text" name="last_name" class="form-control form-control-lg border-left-0 needs-validation" 
+            required autocomplete="off" {{with .Form.Errors.Get "last_name"}} is-invalid {{end}} id="last_name" placeholder="Last Name" value="{{$u.LastName}}">
+            </div>
+
+
+
+            <label for="InputEmail">Username</label> 
+            {{with .Form.Errors.Get "email"}}
+            <label class="text-danger">{{.}}</label>
+            {{end}}
+            <div class="input-group">
+            <div class="input-group-prepend bg-transparent">
+                <span class="input-group-text bg-transparent border-right-0">
+                <i class="ti-user text-primary" ></i>
+                </span>
+            </div>
+            <input type="email" name="email" class="form-control form-control-lg border-left-0 needs-validation" 
+            required autocomplete="off" {{with .Form.Errors.Get "email"}} is-invalid {{end}} id="email" placeholder="Email" value="{{$u.Email}}">
+            </div>
+       
+            <label for="InputPassword">Password</label>
+            {{with .Form.Errors.Get "password"}}
+            <label class="text-danger">{{.}}</label>
+            {{end}}
+            <div class="input-group">
+            <div class="input-group-prepend bg-transparent">
+                <span class="input-group-text bg-transparent border-right-0">
+                <i class="ti-lock text-primary" ></i>
+                </span>
+            </div>
+ 
+        <input type="password" name="password" class="form-control form-control-lg border-left-0 needs-validation" 
+        required autocomplete="off" {{with .Form.Errors.Get "password"}} is-invalid {{end}} id="password" placeholder="Password" value="">                        
+        </div>
+   
+        <label for="InputPassword2">Verify Password</label>
+        {{with .Form.Errors.Get "password_2"}}
+        <label class="text-danger">{{.}}</label>
+        {{end}}
+        <div class="input-group">
+        <div class="input-group-prepend bg-transparent">
+            <span class="input-group-text bg-transparent border-right-0">
+            <i class="ti-lock text-primary" ></i>
+            </span>
+        </div>
+
+    <input type="password" name="password_2" class="form-control form-control-lg border-left-0 needs-validation" 
+    required autocomplete="off" {{with .Form.Errors.Get "password_2"}} is-invalid {{end}} id="password_2" placeholder="Verify Password" value="">                        
+    </div>
+    </div>
+
+    <div class="my-2 d-flex justify-content-between align-items-center">
+        
+        
+    </div>
+    <div class="my-3">
+        <input class="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn" type="submit" value="Submit"></input>
+    </div>
+
+    
+    </form>
+</div>
 {{end}}
 
 {{define "js"}}
+
 {{end}}
