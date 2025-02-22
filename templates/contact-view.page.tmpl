@@ -9,8 +9,7 @@ Contact Details
 
 {{define "content"}}
 {{$ct := index .Data "contact"}}
-
-{{$src := index .StringMap "src"}} 
+{{$src := index .StringMap "returnPath"}} 
 <div class="row">
   <div class="col-lg-8 grid-margin stretch-card container-fluid">
     <div class="card bg-light">
@@ -88,11 +87,11 @@ Contact Details
                 <div class="row">
                   <div class="col-sm-3">
                     <button type="button" class="text-truncate btn btn-primary btn-fw"  
-                    onclick="location.href='/{{$src}}'">Back</button>
+                    onclick="location.href='{{$src}}'">Back</button>
                   </div>
                   <div class="col-sm-3">
                     <button type="button" class="text-truncate btn btn-warning btn-fw" disabled
-                    onclick="location.href='/contacts/view/{{$src}}/{{$ct.ID}}'">Save</button>
+                    onclick="location.href='/contacts/view/{{$ct.ID}}'">Save</button>
                   </div>
                   <div class="col-sm-3">
                     <button type="button" class="text-truncate btn btn-danger btn-fw"  
@@ -100,7 +99,7 @@ Contact Details
                   </div>
                   <div class="col-sm-3">
                     <button type="button" action="get" class="grid-margin btn btn-secondary btn-fw"  
-                    onclick="location.href='/contacts/edit/{{$src}}/{{$ct.ID}}'">Edit</button>
+                    onclick="location.href='/contacts/edit/{{$ct.ID}}'">Edit</button>
                   </div>
                   </div>
              

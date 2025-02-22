@@ -24,7 +24,7 @@ td {
 
         
         <button type="button" class="text-truncate btn btn-outline-dark btn-fw float-sm-right" style="width: 10rem;" 
-        onclick="location.href='/contacts/new/dashboard'">New Contact</button>
+        onclick="location.href='/contacts/new'">New Contact</button>
       </div>
       <div class="table-responsive">
         <table class="table table-hover" id="fav-contacts">
@@ -54,7 +54,7 @@ td {
               <td>{{.JobTitle}}</td>
               <td>{{.Objective}}</td>
               <td type="button" class="btn btn-inverse-primary ti-pencil"  
-              onclick="location.href='/contacts/view/dashboard/{{.ID}}'"></td>
+              onclick="location.href='/contacts/view/{{.ID}}'"></td>
             </tr>
             {{end}}
           </tbody>

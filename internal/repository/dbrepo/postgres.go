@@ -28,19 +28,19 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string) (string, strin
 	row := m.DB.QueryRowContext(ctx, "select user_id, password from users where lower(email)=lower($1)", email)
 	err := row.Scan(&id, &hashedPassword)
 	if err != nil {
-		log.Println("func Authenticate, error 1")
+		//log.Println("func Authenticate, error 1")
 		return "", "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		log.Println("func Authenticate, error 2")
+		//log.Println("func Authenticate, error 2")
 		return "", "", errors.New("incorrect password")
 	} else if err != nil {
-		log.Println("func Authenticate, error 3")
+		//log.Println("func Authenticate, error 3")
 		return "", "", err
 	}
-	log.Println("func Authenticate, no error")
+	//log.Println("func Authenticate, no error")
 	return id, hashedPassword, nil
 }
 
@@ -54,9 +54,9 @@ func (m *postgresDBRepo) GetAllContacts() ([]models.Contact, error) {
 	query := `
 	select c.id, c.first_name, c.last_name, c.job_title, c.email, c.mobile_phone, 
 	c.work_phone, c.phone_3, c.linkedin, c.github, c.website, c.notes, c.description, c.objective,
-	c.timeline, c.favorite, c.created_at, c.updated_at, cp.company_name 
+	c.timeline, c.favorite, c.created_at, c.updated_at, cmp.company_name 
 	from contacts c
-	left join companies cp on c.company_id=cp.id
+	left join companies cmp on c.company_id=cmp.id
 	where c.user_id='2041a735-715f-4fb1-a08c-1055fe1916e6'`
 
 	// Get UserID in QueryContext call from session
@@ -92,7 +92,7 @@ func (m *postgresDBRepo) GetAllContacts() ([]models.Contact, error) {
 		if err != nil {
 			return contacts, err
 		}
-		// add an if statement to only check for future reservations.
+
 		contacts = append(contacts, i)
 	}
 	if err = rows.Err(); err != nil {
@@ -111,9 +111,9 @@ func (m *postgresDBRepo) GetFavoriteContacts() ([]models.Contact, error) {
 	query := `
 	select c.id, c.first_name, c.last_name, c.job_title, c.email, c.mobile_phone, 
 	c.work_phone, c.phone_3, c.linkedin, c.github, c.website, c.notes, c.description, c.objective,
-	c.timeline, c.favorite, c.created_at, c.updated_at, cp.company_name 
+	c.timeline, c.favorite, c.created_at, c.updated_at, cmp.company_name 
 	from contacts c
-	left join companies cp on c.company_id=cp.id
+	left join companies cmp on c.company_id=cmp.id
 	where c.user_id='2041a735-715f-4fb1-a08c-1055fe1916e6' and favorite='true'`
 
 	// Get UserID in QueryContext call from session
@@ -149,7 +149,7 @@ func (m *postgresDBRepo) GetFavoriteContacts() ([]models.Contact, error) {
 		if err != nil {
 			return contacts, err
 		}
-		// add an if statement to only check for future reservations.
+
 		contacts = append(contacts, i)
 	}
 	if err = rows.Err(); err != nil {
@@ -168,9 +168,9 @@ func (m *postgresDBRepo) GetContactByID(id int, user_id string) (models.Contact,
 	query := `
 	select c.id, c.first_name, c.last_name, c.job_title, c.email, c.mobile_phone, 
 	c.work_phone, c.phone_3, c.linkedin, c.github, c.website, c.notes, c.description, c.objective,
-	c.timeline, c.favorite, c.created_at, c.updated_at, cp.company_name 
+	c.timeline, c.favorite, c.created_at, c.updated_at, cmp.company_name 
 	from contacts c
-	left join companies cp on c.company_id=cp.id
+	left join companies cmp on c.company_id=cmp.id
 	where c.id=$1`
 
 	// Get UserID in QueryContext call from session
@@ -236,13 +236,12 @@ func (m *postgresDBRepo) AddNewCompany(cmp models.Company) (int, error) {
 	//check if company exists  with func CompanyExists in parent function
 
 	var returnID int
-	stmt := `insert into companies (company_name, url, address, industry, size, created_at, updated_at) 
-	values ($1, $2, $3, $4, $5, $6, $6) returning id`
+	stmt := `insert into companies (company_name, url, industry, size, created_at, updated_at) 
+	values ($1, $2, $3, $4, $5, $6) returning id`
 
 	err := m.DB.QueryRowContext(ctx, stmt,
 		cmp.CompanyName,
 		cmp.URL,
-		cmp.Address,
 		cmp.Industry,
 		cmp.Size,
 		time.Now(),
@@ -281,19 +280,19 @@ func (m *postgresDBRepo) AddNewContact(c models.Contact, user_id string) (int, e
 	var returnID int
 	if err != nil {
 		log.Println("error in CompanyExists", err)
+		return 0, err
 	}
 	if tempID > 0 {
 		returnID = tempID
-		log.Printf("Temp ID: %d", tempID)
+		//log.Printf("Temp ID: %d", tempID)
 	} else {
-		returnID, err := m.AddNewCompany(c.Company)
+		returnID, err = m.AddNewCompany(c.Company)
 		if err != nil {
 			log.Println("error in AddNewCompany", err)
 			return 0, err
 		}
-		return returnID, nil
 	}
-	log.Printf("Got New Company ID: %d", returnID)
+	//log.Printf("Got New Company ID: %d", returnID)
 
 	stmt := `
 	insert into contacts (first_name, last_name, job_title, email, objective, mobile_phone, work_phone, 
@@ -325,8 +324,67 @@ func (m *postgresDBRepo) AddNewContact(c models.Contact, user_id string) (int, e
 		fmt.Println("Error in AddNewContact insert contact", err)
 		return 0, err
 	}
-	fmt.Println("AddNewContact insert contact Ran")
+	//fmt.Println("AddNewContact insert contact Ran")
 	return 1, nil
+}
+
+// UdateContactByID updates a contact details by ID
+func (m *postgresDBRepo) UpdateContactByID(c models.Contact) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var returnID int
+
+	tempID, err := m.CompanyExists(c.Company)
+	if err != nil {
+		log.Println("error in CompanyExists", err)
+		return err
+	}
+	if tempID > 0 {
+		returnID = tempID
+		//log.Printf("Temp ID: %d", tempID)
+	} else {
+		returnID, err = m.AddNewCompany(c.Company)
+		if err != nil {
+			log.Println("error in AddNewCompany", err)
+			return err
+		}
+	}
+
+	stmt := `update contacts 
+	set company_id =$1, first_name=$2, last_name=$3, job_title=$4, 
+	email=$5, mobile_phone=$6, work_phone=$7, phone_3=$8, linkedin=$9, github=$10, 
+	website=$11, notes=$12, description=$13, objective=$14, timeline=$15, favorite=$16, updated_at=$17 
+	where id = $18
+	`
+	//validate this work right
+	c.ContactTimeLine = utils.TimeLineBuilderJSON(time.Now(), "Contact Updated")
+
+	_, err = m.DB.ExecContext(ctx, stmt,
+		returnID, // I need to think about this. I need to check if it changed, then add new company or update
+		c.FirstName,
+		c.LastName,
+		c.JobTitle,
+		c.Email,
+		c.MobilePhone,
+		c.WorkPhone,
+		c.Phone3,
+		c.Linkedin,
+		c.Github,
+		c.Website,
+		c.Notes,
+		c.Description,
+		c.Objective,
+		c.ContactTimeLine,
+		c.Favorite,
+		time.Now(),
+		c.ID,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 // Get all Companies returns a slice of models.company with all companies
@@ -370,46 +428,6 @@ func (m *postgresDBRepo) GetAllCompanies() ([]models.Company, error) {
 	return companies, nil
 }
 
-// UdateContactByID updates a contact details by ID
-func (m *postgresDBRepo) UpdateContactByID(c models.Contact) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	stmt := `update contacts (company_id =$1, first_name=$2, last_name=$3, job_title=$4, 
-	email=$5, mobile_phone=$6, work_phone=$7, phone_3=$8, linkedin=$9, github=$10, 
-	website=$11, notes=$12, description=$13, objective=$14, timeline=$15, favorite=$16, updated_at=$17) 
-	where id = $18
-	`
-	//validate this work right
-	c.ContactTimeLine = utils.TimeLineBuilderJSON(time.Now(), "Contact Updated")
-
-	_, err := m.DB.ExecContext(ctx, stmt,
-		c.CompanyID, // I need to think about this. I need to check if it changed, then add new company or update
-		c.FirstName,
-		c.LastName,
-		c.JobTitle,
-		c.Email,
-		c.MobilePhone,
-		c.WorkPhone,
-		c.Phone3,
-		c.Linkedin,
-		c.Github,
-		c.Website,
-		c.Notes,
-		c.Description,
-		c.Objective,
-		c.ContactTimeLine,
-		c.Favorite,
-		time.Now(),
-		c.ID,
-	)
-	if err != nil {
-		return err
-	}
-	return nil
-
-}
-
 // UserExists checks to see if a username is already registered in the DB
 func (m *postgresDBRepo) UserExists(email string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -424,10 +442,10 @@ func (m *postgresDBRepo) UserExists(email string) (bool, error) {
 			fmt.Println("UserExists sql.ErrNoRows")
 			return false, nil // No user found, which means email doesn't exist
 		}
-		fmt.Println("UserExists Error 2")
+		//fmt.Println("UserExists Error 2")
 		return false, err // Some other error occurred
 	}
-	fmt.Println("UserExists No Error")
+	//fmt.Println("UserExists No Error")
 	return true, nil // User found, email exists
 }
 
@@ -472,13 +490,13 @@ func (m *postgresDBRepo) GetAllJobListing(uuid string) ([]models.JobListing, err
 
 	query := `
 	select l.id, l.url, l.job_title, l.req_yoe, l.low_pay, l.target_pay, l.high_pay, l.location_city, 
-	l.location_state, l.created_at, l.updated_at, cp.id, cp.url, cp.company_name 
+	l.location_state, l.created_at, l.updated_at, cmp.id, cmp.url, cmp.company_name 
 	from job_listings l
-	left join companies cp on l.company_id=cp.id
+	left join companies cmp on l.company_id=cmp.id
 	where l.user_id = $1`
 
 	// Get UserID in QueryContext call from session
-	fmt.Println("running GetAllJobListing, uuid: ", uuid)
+	//fmt.Println("running GetAllJobListing, uuid: ", uuid)
 	rows, err := m.DB.QueryContext(ctx, query, uuid)
 	if err != nil {
 		return listings, err
@@ -506,13 +524,54 @@ func (m *postgresDBRepo) GetAllJobListing(uuid string) ([]models.JobListing, err
 		if err != nil {
 			return listings, err
 		}
-		// add an if statement to only check for future reservations.
+
 		listings = append(listings, i)
 	}
 	if err = rows.Err(); err != nil {
 		return listings, err
 	}
 	return listings, nil
+}
+
+func (m *postgresDBRepo) GetJobListingByID(id int, uuid string) (models.JobListing, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var listing models.JobListing
+	fmt.Println("Job ID: ", id)
+	query := `
+	select l.id, l.url, l.job_title, l.req_yoe, l.low_pay, l.target_pay, l.high_pay, l.location_city, 
+	l.location_state, l.created_at, l.updated_at, cmp.id, cmp.url, cmp.company_name, cmp.industry, cmp.size, cmp.url
+	from job_listings l
+	left join companies cmp on l.company_id=cmp.id
+	where l.id = $1`
+
+	// Get UserID in QueryContext call from session
+	fmt.Println("running GetAllJobListing, uuid: ", uuid)
+	row := m.DB.QueryRowContext(ctx, query, id)
+	err := row.Scan(
+		&listing.ID,
+		&listing.URL,
+		&listing.JobTitle,
+		&listing.ReqYOE,
+		&listing.LowPay,
+		&listing.TargetPay,
+		&listing.HighPay,
+		&listing.Location.City,
+		&listing.Location.State,
+		&listing.CreatedAt,
+		&listing.UpdatedAt,
+		&listing.CompanyID,
+		&listing.Company.URL,
+		&listing.Company.CompanyName,
+		&listing.Company.Industry,
+		&listing.Company.Size,
+		&listing.Company.URL,
+	)
+	if err != nil {
+		return listing, err
+	}
+	return listing, nil
 }
 
 //UpdateUser

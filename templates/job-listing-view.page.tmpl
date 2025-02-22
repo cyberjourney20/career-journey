@@ -8,63 +8,65 @@ Job Listing Details
 {{end}}
 
 {{define "content"}}
-{{$ct := index .Data "contact"}}
+{{$l := index .Data "listing"}}
+{{$id := index .StringMap "id"}}
 
-{{$src := index .StringMap "src"}} 
 <div class="row">
   <div class="col-lg-8 grid-margin stretch-card container-fluid">
     <div class="card bg-light">
       <div class="card-body">
         <div class="row">
-          <div class="col-lg-9">
-            <h4 class="display-3 float-left" style="margin-left: 1rem;"> {{$ct.FirstName}} {{$ct.LastName}}</h4>
+          <div class="col-lg-12">
+            <h4 class="display-4 float-left" style="margin-left: 1rem;">Information Systems Security Officer (ISSO) II </h4>
+            <h4 class="display-5 float-left" style="margin-left: 1rem;">$110,000 - $130,000</h4>
           </div> 
-          <div class="col-lg-3 text-center"><strong>Objective</strong> 
-            <div class="col text-center">{{$ct.Objective}}</div>
-          </div>
-          <div class="col-lg-8"> <hr style="margin-top: 0rem;"></div> 
+          
+          <div class="col-lg-12"> <hr style="margin-top: 0rem;"></div> 
            
         </div>
         <div class="row grid-margin">
           <div class="col-md-1"></div>
             <div class="col-md-10 grid-margin">
+              
               <div class="row">
-                <p class="display-4">Contact Info</p>
+                <p class="display-5">Company</p>
                 <div class="card">
                   <div class="card-body">
                     <div class="col-md-12">
-                      <p class="display-5"><strong>Title: </strong>{{$ct.JobTitle}}</p>
-                      <p class="display-5"><strong> Email: </strong>{{$ct.Email}}</p>
-                      <p class="display-5"><strong> Mobile: </strong>{{$ct.MobilePhone}}</p>
-                      <p class="display-5"><strong> Work: </strong>{{$ct.WorkPhone}}</p>
-                      <p class="display-5"><strong> Linkedin: </strong><a href="{{$ct.WorkPhone}}"></a></p>
-                      <p class="display-5"><strong> GitHub: </strong><a href="{{$ct.Github}}"></a></p>
-                      <p class="display-5"><strong> Website: </strong><a href="{{$ct.Website}}"></a></p>
+                      <p class="display-5"><strong>Company: </strong>{{$l.Company.CompanyName}}</p>
+                      <p class="display-5"><strong>Industry: </strong>{{$l.Company.Industry}}</p>
+                      <p class="display-5"><strong>Size: </strong>{{$l.Company.Size}}</p>
+                      <p class="display-5"><strong>Website: </strong><a href="{{$l.Company.URL}}" target="_blank">{{$l.Company.URL}}</a></p>
                     </div>
                   </div>
                 </div>
               </div><br>
+
               <div class="row">
-                <p class="display-4">Company</p>
+                <p class="display-5">Job Details</p>
                 <div class="card">
                   <div class="card-body">
                     <div class="col-md-12">
-                      <p class="display-5"><strong>Company: </strong>{{$ct.Company.CompanyName}}</p>
-                      <p class="display-5"><strong>Industry: </strong>{{$ct.Company.Industry}}</p>
-                      <p class="display-5"><strong>Size: </strong>{{$ct.Company.Size}}</p>
-                      <p class="display-5"><strong>Website: </strong><a href="{{$ct.Company.URL}}"></a></p>
+                      <p class="display-5"><strong>Job Title: </strong>{{$l.JobTitle}}</p>
+
+                      <p class="display-5"><strong>Pay Range: </strong>{{$l.LowPay}} - {{$l.HighPay}}</p>
+                      <p class="display-5"><strong>My Target Pay: </strong>{{$l.TargetPay}}</p>
+                      <p class="display-5"><strong>Point Of Contact: </strong>Add to DB John Doe Link</p>
+                      <p class="display-5"><strong>Required Experience: </strong>{{$l.ReqYOE}}</p>
+                      <p class="display-5"><strong>Location: </strong>{{$l.Location.City}},  {{$l.Location.State}}</p>
+                      <p class="display-5"><strong>Link: </strong><a href="{{$l.URL}}" target="_blank">{{$l.URL}}</a></p>
                     </div>
                   </div>
                 </div>
               </div><br>
-              <form>
-                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+
               <div class="row">
                 <div class="col-md-6"> 
-                  <p class="display-5">Details</p>    
+                  <p class="display-5">Required Skills</p>    
                 </div>
                 <div class="col-md-6">
-                  <p class="display-5">Notes</p>
+                  <p class="display-5">Required Certifications</p>
                 </div>
               </div>
               <div class="row grid-margin" style="padding: 0rem;">
@@ -72,39 +74,54 @@ Job Listing Details
                   <div class="card" >
                     <div class="card-body" style="padding: 0rem;">
                       <textarea type="text" style="padding: .5rem; border-style: none;" name="details" 
-                      class="form-control" id="details" autocomplete="off" rows="10">{{$ct.Description}}</textarea>
+                      class="form-control" id="details" autocomplete="off" rows="10">Information Assurance, RMF, NIST, A&A, System Audits, Risk Assessment, Continuous Monitoring, Incident Response, Windows OS, Linux OS, Firewalls, Network Security, eMASS, SCAP, Nessus, SIEM, System Hardening, System Sanitization, Configuration Management, Problem Solving, Time Management, Team Collaboration.</textarea>
                     </div>
                   </div>
                 </div>
-                <div class="col-md-6" style=" padding-right:0;" >
+                <div class="col-md-6" style=" padding-right:0;">
                   <div class="card float-right ">
                     <div class="card-body" style="padding: 0rem;">
                       <textarea type="text" style="padding: .5rem; border-style: none; " name="notes" 
-                      class="form-control" id="notes" autocomplete="off" rows="10"> {{$ct.Notes}}</textarea>
+                      class="form-control" id="notes" autocomplete="off" rows="10">Top Secret/SCI, Security+, CISSP, CISM, CGRC, SSCP, GICSP, GSEC, GSLC, CySA+, CASP+.</textarea>
                     </div>
                   </div>
                 </div>
               </div>
+
+              <div class="row grid-margin">
+                <p class="display-5">Job Description Summary</p>
+                <div class="card float-right">
+                  <div class="card-body" style="padding: 0rem;">
+                    <textarea type="text" style="padding: .5rem; border-style: none; " name="notes" 
+                      class="form-control" id="notes" autocomplete="off" rows="10">Responsible for maintaining the security, compliance, and documentation of information systems, including system audits, risk assessments, and continuous monitoring. Ensures adherence to federal standards (NIST, RMF), manages incident response, and collaborates with security officers. Requires a Top Secret clearance, Security+ certification, and 5+ years in IA. Preferred experience with eMASS, SCAP, and Linux, plus certifications like CISSP or CISM.</textarea>
+                  </div>
+                </div>
+              </div>
+              <br>
+
+
+
                 <div class="row">
                   <div class="col-sm-3">
                     <button type="button" class="text-truncate btn btn-primary btn-fw"  
-                    onclick="location.href='/{{$src}}'">Back</button>
+                    onclick="location.href='{{.StringMap.returnPath}}'">Back</button>
                   </div>
                   <div class="col-sm-3">
-                    <button type="button" class="text-truncate btn btn-warning btn-fw" disabled
-                    onclick="location.href='/contacts/view/{{$src}}/{{$ct.ID}}'">Save</button>
+                    <button type="button" class="text-truncate btn btn-secondary btn-fw" disabled
+                    onclick="location.href='/jobs/edit/{{$id}}'">Edit</button>
                   </div>
                   <div class="col-sm-3">
-                    <button type="button" class="text-truncate btn btn-danger btn-fw"  
-                    onclick="location.href='javascript: location.reload();'">Cancel</button>
+                    <button type="button" action="get" class="grid-margin btn btn-warning btn-fw" disabled
+                    onclick="location.href='/jobs/archive/{{$id}}'">Archive</button>
                   </div>
                   <div class="col-sm-3">
-                    <button type="button" action="get" class="grid-margin btn btn-secondary btn-fw"  
-                    onclick="location.href='/contacts/edit/{{$src}}/{{$ct.ID}}'">Edit</button>
+                    <button type="button" action="post" class="grid-margin btn btn-danger btn-fw" disabled
+                    onclick="location.href='/jobs/delete/{{$id}}'">Delete</button>
                   </div>
+                 
                   </div>
              
-            </form>
+            
           </div>
         </div>
       </div>
@@ -121,13 +138,13 @@ Job Listing Details
           <div class="card">
             <div class="card-body" >
               <p>Event 1: 7 Feb 2025</p>
-              <p>Event 2: 7 Feb 2025</p>
-              <p>Event 3: 7 Feb 2025</p>
-              <p>Event 4: 7 Feb 2025</p>
-              <p>Event 5: 7 Feb 2025</p>
-              <p>Event 6: 7 Feb 2025</p>
-              <p>Event 7: 7 Feb 2025</p>
-              <p>Event 8: 7 Feb 2025</p><br>
+              <p>Event 2: 8 Feb 2025</p>
+              <p>Event 3: 10 Feb 2025</p>
+              <p>Event 4: 14 Feb 2025</p>
+              <p>Event 5: 22 Feb 2025</p>
+              <p>Event 6: 3 Mar 2025</p>
+              <p>Event 7: 7 Mar 2025</p>
+              <p>Event 8: 8 Mar 2025</p><br>
               <!-- ADD ATIMELINE ADD CAPABILITY -->
             </div>
           </div>

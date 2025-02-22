@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/cyberjourney20/career-journey/internal/config"
 	"github.com/cyberjourney20/career-journey/internal/driver"
@@ -51,7 +50,7 @@ func NewHandlers(r *Repository) {
 
 // Availability page handler
 func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
-	if m.IsLoggedIn(w, r) {
+	if m.IsLoggedIn(r) {
 		m.App.Session.Put(r.Context(), "flash", "You are already logged in")
 		http.Redirect(w, r, "/my/dashboard", http.StatusSeeOther)
 	}
@@ -61,13 +60,53 @@ func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// clean this up, it dosent need the repository or response writer.
-func (m *Repository) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
-	id := m.App.Session.Get(r.Context(), "user_id")
-	if id == nil {
-		return false
+// PostShowLogin handles the user login post request
+func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request) {
+
+	_ = m.App.Session.RenewToken(r.Context())
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Println("error parsing form", err)
 	}
-	return true
+
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	form := forms.New(r.PostForm)
+	form.Required("email", "password")
+	form.IsEmail("email")
+	form.LengthTest("password", 8, 64)
+
+	if !form.Valid() {
+		render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+			Form: form,
+		})
+		return
+	}
+
+	user_id, _, err := m.DB.Authenticate(email, password)
+	if err != nil {
+		log.Println("error in authentication", err)
+		// log.Println("Login Redirect 1")
+		m.App.Session.Put(r.Context(), "error", "Invalid login credentials")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+	} else {
+		if len(user_id) == 0 {
+			// log.Println("Login Redirect 2")
+			m.App.Session.Put(r.Context(), "error", "Invalid login credentials")
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		}
+	}
+	//log.Println("User Authenticated", user_id)
+	m.App.Session.Put(r.Context(), "user_id", user_id)
+	m.App.Session.Put(r.Context(), "flash", "Logged in successfully")
+	http.Redirect(w, r, "/my/dashboard", http.StatusSeeOther)
+}
+
+// IsLoggedIn checks for a user_id to validate user is logged in.
+func (m *Repository) IsLoggedIn(r *http.Request) bool {
+	return m.App.Session.Exists(r.Context(), "user_id")
 }
 
 // Logout logs a user out
@@ -78,247 +117,10 @@ func (m *Repository) UserLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-// func (m *Repository) UserLogout(w http.ResponseWriter, r *http.Request) {
-// 	m.App.Session.Put(r.Context(), "user_id", nil)
-// 	m.App.Session.Put(r.Context(), "error", "You have been logged out")
-// 	http.Redirect(w, r, "/", http.StatusSeeOther)
-// }
-
-// Home renders the home page
-func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "home.page.tmpl", &models.TemplateData{})
-}
-
-// About is the about page handler
-func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "about.page.tmpl", &models.TemplateData{})
-}
-
-func (m *Repository) ResourcesJob(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "resources-job.page.tmpl", &models.TemplateData{})
-}
-func (m *Repository) ResourcesInterview(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "resources-interview.page.tmpl", &models.TemplateData{})
-}
-func (m *Repository) ResourcesResume(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "resources-resume.page.tmpl", &models.TemplateData{})
-}
-
-// Dashboard is the users home page handler
-func (m *Repository) Dashboard(w http.ResponseWriter, r *http.Request) {
-	if !m.IsLoggedIn(w, r) {
-		m.App.Session.Put(r.Context(), "error", "You Must Login to Access This Page")
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-	}
-	contacts, err := m.DB.GetFavoriteContacts()
-
-	if err != nil {
-		helpers.ServerError(w, err)
-		return
-	}
-
-	data := make(map[string]interface{})
-	data["contacts"] = contacts
-
-	render.Template(w, r, "dashboard.page.tmpl", &models.TemplateData{
-		Data: data,
-	})
-}
-
-// Contacts page handler
-func (m *Repository) ContactsAll(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("ContactAll Running")
-	contacts, err := m.DB.GetAllContacts()
-	if err != nil {
-		helpers.ServerError(w, err)
-		return
-	}
-
-	data := make(map[string]interface{})
-	data["contacts"] = contacts
-
-	render.Template(w, r, "contacts-all.page.tmpl", &models.TemplateData{
-		Data: data,
-	})
-}
-
-func (m *Repository) ContactsNew(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Print("GPT Version, This page is updatated!")
-	var ctID int
-	var contact models.Contact
-	var err error
-	form := forms.New(nil)
-	src := chi.URLParam(r, "src")
-	id := chi.URLParam(r, "id")
-	editMode := id != ""
-
-	if id != "" {
-		ctID, err = strconv.Atoi(id) // Convert to int
-		if err != nil {
-			http.Error(w, "Invalid contact ID", http.StatusBadRequest)
-			return
-		}
-	}
-
-	// fmt.Println("Raw Path:", r.URL.Path)
-	// fmt.Println("Extracted Source:", src)
-	// fmt.Println("Extracted ID:", id)
-	// fmt.Println("Edit Mode:", editMode)
-
-	if editMode {
-		user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
-		if !ok || user_id == "" {
-			helpers.ServerError(w, errors.New("user ID not found in session"))
-			return
-		}
-		// fmt.Println("calling GetContactByID with ctID, user_id", ctID, user_id)
-		contact, err = m.DB.GetContactByID(ctID, user_id)
-		if err != nil {
-			helpers.ServerError(w, err)
-			return
-		}
-		editMode = true
-		// fmt.Println("contact.FirstName:", contact.FirstName)
-	} else {
-		contact = models.Contact{}
-	}
-
-	stringMap := make(map[string]string)
-	data := make(map[string]interface{})
-	data["contact"] = contact
-	data["editMode"] = editMode
-	stringMap["src"] = src
-	stringMap["id"] = id
-
-	// fmt.Println("Outside of if statement contact.FirstName:", contact.FirstName)
-	// fmt.Println("Final Contact Data:", contact)
-	// fmt.Println("Company Data:", contact.Company)
-
-	render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{
-		StringMap: stringMap,
-		Form:      form,
-		Data:      data,
-	})
-}
-
-// ContactsNewPost
-func (m *Repository) ContactsNewPost(w http.ResponseWriter, r *http.Request) {
-
-	var contact models.Contact
-
-	contact, ok := m.App.Session.Get(r.Context(), "contact").(models.Contact)
-	if !ok {
-		m.App.Session.Put(r.Context(), "error", "can't get contact data from session")
-		http.Redirect(w, r, "/my/dashboard", http.StatusTemporaryRedirect)
-
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		m.App.Session.Put(r.Context(), "error", "can't parse form")
-		http.Redirect(w, r, "/my/dashboard", http.StatusTemporaryRedirect)
-		return
-	}
-	favorite := false // Default value is false if the checkbox isn't checked
-	if r.FormValue("favorite") == "on" {
-		favorite = true
-	}
-	contact.Favorite = favorite
-	contact.FirstName = r.Form.Get("first_name")
-	contact.LastName = r.Form.Get("last_name")
-	contact.Email = r.Form.Get("email")
-	contact.Objective = r.Form.Get("objective")
-	contact.MobilePhone = r.Form.Get("mobile_phone")
-	contact.WorkPhone = r.Form.Get("work_phone")
-	contact.Linkedin = r.Form.Get("linkedin")
-	contact.Github = r.Form.Get("github")
-	contact.JobTitle = r.Form.Get("job_title")
-	contact.Company.CompanyName = r.Form.Get("company")
-	contact.Company.URL = r.Form.Get("url")
-	contact.Company.Industry = r.Form.Get("industry")
-	contact.Company.Size = r.Form.Get("size")
-	contact.Description = r.Form.Get("description")
-	contact.Notes = r.Form.Get("notes")
-	form := forms.New(r.PostForm)
-
-	form.Required("first_name", "last_name", "email", "job_title", "company")
-	form.LengthTest("first_name", 3, 100)
-	form.IsEmail("email")
-
-	//Validate form data
-	if !form.Valid() {
-		data := make(map[string]interface{})
-		data["contact"] = contact
-		http.Error(w, "Invalid Form Data", http.StatusSeeOther)
-		render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{
-			Form: form,
-			Data: data,
-		})
-		return
-	}
-	//Write new contact to DataBase
-	user_id := m.App.Session.Get(r.Context(), "user_id").(string)
-
-	_, err = m.DB.AddNewContact(contact, user_id)
-	if err != nil {
-		m.App.Session.Put(r.Context(), "error", "can't insert new contact into database")
-		http.Redirect(w, r, "/contacts", http.StatusTemporaryRedirect)
-		return
-	}
-	m.App.Session.Put(r.Context(), "flash", "Added new contact into database")
-	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
-	//render.Template(w, r, "contacts.page.tmpl", &models.TemplateData{})
-}
-
-func (m *Repository) ContactViewByID(w http.ResponseWriter, r *http.Request) {
-
-	exploded := strings.Split(r.RequestURI, "/")
-
-	if len(exploded) < 5 {
-		helpers.ServerError(w, errors.New("invalid URL format"))
-		return
-	}
-
-	id, err := strconv.Atoi(exploded[4])
-	if err != nil {
-		helpers.ServerError(w, err)
-		return
-	}
-	src := exploded[3]
-
-	user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
-	if !ok || user_id == "" {
-		helpers.ServerError(w, errors.New("user ID not found in session"))
-		return
-	}
-
-	contact, err := m.DB.GetContactByID(id, user_id)
-	if err != nil {
-		helpers.ServerError(w, err)
-		return
-	}
-	data := map[string]interface{}{
-		"contact": contact,
-	}
-	// store data in session so the user can access it if they chose to edit the contact.
-	m.App.Session.Put(r.Context(), "contact", contact)
-
-	render.Template(w, r, "contact-view.page.tmpl", &models.TemplateData{
-		StringMap: map[string]string{"src": src},
-		Data:      data,
-		Form:      forms.New(nil),
-	})
-}
-
-func (m *Repository) ContactViewByIDPost(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "#", &models.TemplateData{})
-}
-
+// Register handles the Registration page
 func (m *Repository) Register(w http.ResponseWriter, r *http.Request) {
 
-	if m.IsLoggedIn(w, r) {
+	if m.IsLoggedIn(r) {
 		m.App.Session.Put(r.Context(), "flash", "You are already logged in")
 		http.Redirect(w, r, "/my/dashboard", http.StatusSeeOther)
 	}
@@ -329,6 +131,7 @@ func (m *Repository) Register(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// PostRegister handles the user registration post request
 func (m *Repository) PostRegister(w http.ResponseWriter, r *http.Request) {
 
 	// log.Println("PostRegister Running")
@@ -398,55 +201,279 @@ func (m *Repository) PostRegister(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
-// PostShowLogin handles logging user in
-func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request) {
+// Home renders the home page
+func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "home.page.tmpl", &models.TemplateData{})
+}
 
-	_ = m.App.Session.RenewToken(r.Context())
+// About is the about page handler
+func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "about.page.tmpl", &models.TemplateData{})
+}
 
-	err := r.ParseForm()
-	if err != nil {
-		log.Println("error parsing form", err)
+// ResourcesJob handels the job resources page
+func (m *Repository) ResourcesJob(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "resources-job.page.tmpl", &models.TemplateData{})
+}
+
+// ResourcesInterview handels the interview resources page
+func (m *Repository) ResourcesInterview(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "resources-interview.page.tmpl", &models.TemplateData{})
+}
+
+// ResourcesResume handels the resume resources page
+func (m *Repository) ResourcesResume(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "resources-resume.page.tmpl", &models.TemplateData{})
+}
+
+// Dashboard is the users home page handler
+func (m *Repository) Dashboard(w http.ResponseWriter, r *http.Request) {
+	if !m.IsLoggedIn(r) {
+		m.App.Session.Put(r.Context(), "error", "You Must Login to Access This Page")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 	}
+	contacts, err := m.DB.GetFavoriteContacts()
 
-	email := r.Form.Get("email")
-	password := r.Form.Get("password")
-
-	form := forms.New(r.PostForm)
-	form.Required("email", "password")
-	form.IsEmail("email")
-	form.LengthTest("password", 8, 64)
-
-	if !form.Valid() {
-		render.Template(w, r, "login.page.tmpl", &models.TemplateData{
-			Form: form,
-		})
+	if err != nil {
+		helpers.ServerError(w, err)
 		return
 	}
 
-	user_id, _, err := m.DB.Authenticate(email, password)
+	data := make(map[string]interface{})
+	data["contacts"] = contacts
+
+	render.Template(w, r, "dashboard.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
+}
+
+// ContactsAll handles the Contacs page
+func (m *Repository) ContactsAll(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("ContactAll Running")
+	contacts, err := m.DB.GetAllContacts()
 	if err != nil {
-		log.Println("error in authentication", err)
-		// log.Println("Login Redirect 1")
-		m.App.Session.Put(r.Context(), "error", "Invalid login credentials")
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-	} else {
-		if len(user_id) == 0 {
-			// log.Println("Login Redirect 2")
-			m.App.Session.Put(r.Context(), "error", "Invalid login credentials")
-			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		helpers.ServerError(w, err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["contacts"] = contacts
+
+	render.Template(w, r, "contacts-all.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
+}
+
+// ContactsEdit handles the new and edit contact page
+func (m *Repository) ContactsEdit(w http.ResponseWriter, r *http.Request) {
+
+	//fmt.Print("GPT Version, This page is updatated!")
+	var ctID int
+	var contact models.Contact
+	var err error
+	form := forms.New(nil)
+	src := chi.URLParam(r, "src")
+	id := chi.URLParam(r, "id")
+	editMode := id != ""
+
+	if id != "" {
+		ctID, err = strconv.Atoi(id) // Convert to int
+		if err != nil {
+			http.Error(w, "Invalid contact ID", http.StatusBadRequest)
+			return
 		}
 	}
-	//log.Println("User Authenticated", user_id)
-	m.App.Session.Put(r.Context(), "user_id", user_id)
-	m.App.Session.Put(r.Context(), "flash", "Logged in successfully")
-	http.Redirect(w, r, "/my/dashboard", http.StatusSeeOther)
+
+	if editMode {
+		user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
+		if !ok || user_id == "" {
+			helpers.ServerError(w, errors.New("user ID not found in session"))
+			return
+		}
+		// fmt.Println("calling GetContactByID with ctID, user_id", ctID, user_id)
+		contact, err = m.DB.GetContactByID(ctID, user_id)
+		if err != nil {
+			helpers.ServerError(w, err)
+			return
+		}
+		editMode = true
+		// fmt.Println("contact.FirstName:", contact.FirstName)
+	} else {
+		contact = models.Contact{}
+	}
+
+	stringMap := make(map[string]string)
+	data := make(map[string]interface{})
+	data["contact"] = contact
+	data["editMode"] = editMode
+	stringMap["src"] = src
+	stringMap["id"] = id
+
+	// fmt.Println("Outside of if statement contact.FirstName:", contact.FirstName)
+	// fmt.Println("Final Contact Data:", contact)
+	// fmt.Println("Company Data:", contact.Company)
+
+	render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{
+		StringMap: stringMap,
+		Form:      form,
+		Data:      data,
+	})
 }
 
+// ContactsEditPost handels the new and edit contact post data
+func (m *Repository) ContactsEditPost(w http.ResponseWriter, r *http.Request) {
+
+	editMode := r.FormValue("edit_mode") == "true"
+	var contact models.Contact
+	if editMode {
+		var ok bool
+		contact, ok = m.App.Session.Get(r.Context(), "contact").(models.Contact)
+		if !ok {
+			m.App.Session.Put(r.Context(), "error", "can't get contact data from session")
+			http.Redirect(w, r, "/my/dashboard", http.StatusTemporaryRedirect)
+			return
+		}
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		m.App.Session.Put(r.Context(), "error", "can't parse form")
+		http.Redirect(w, r, "/my/dashboard", http.StatusTemporaryRedirect)
+		return
+	}
+	favorite := false // Default value is false if the checkbox isn't checked
+
+	if r.FormValue("favorite") == "true" {
+		favorite = true
+	}
+	contact.Favorite = favorite
+	contact.FirstName = r.Form.Get("first_name")
+	contact.LastName = r.Form.Get("last_name")
+	contact.Email = r.Form.Get("email")
+	contact.Objective = r.Form.Get("objective")
+	contact.MobilePhone = r.Form.Get("mobile_phone")
+	contact.WorkPhone = r.Form.Get("work_phone")
+	contact.Linkedin = r.Form.Get("linkedin")
+	contact.Github = r.Form.Get("github")
+	contact.JobTitle = r.Form.Get("job_title")
+	contact.Company.CompanyName = r.Form.Get("company")
+	contact.Company.URL = r.Form.Get("url")
+	contact.Company.Industry = r.Form.Get("industry")
+	contact.Company.Size = r.Form.Get("size")
+	contact.Description = r.Form.Get("description")
+	contact.Notes = r.Form.Get("notes")
+	form := forms.New(r.PostForm)
+
+	form.Required("first_name", "last_name", "email", "job_title", "company")
+	form.LengthTest("first_name", 3, 100)
+	form.IsEmail("email")
+
+	//Validate form data
+	if !form.Valid() {
+		data := make(map[string]interface{})
+		data["contact"] = contact
+		m.App.Session.Put(r.Context(), "error", "Invalid form data")
+		render.Template(w, r, "contacts-new.page.tmpl", &models.TemplateData{
+			Form: form,
+			Data: data,
+		})
+		return
+	}
+	//Write new contact to DataBase
+	user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
+	if !ok || user_id == "" {
+		helpers.ServerError(w, errors.New("user ID not found in session"))
+		return
+	}
+
+	if r.FormValue("edit_mode") == "true" {
+		err = m.DB.UpdateContactByID(contact)
+		if err != nil {
+			fmt.Println("error returned from UpdateContactByID: ", err)
+			m.App.Session.Put(r.Context(), "error", "can't update contact in database")
+			http.Redirect(w, r, "/contacts", http.StatusTemporaryRedirect)
+			return
+		}
+		m.App.Session.Put(r.Context(), "flash", "Updatd contact in database")
+		http.Redirect(w, r, "/contacts", http.StatusSeeOther)
+
+	} else {
+		_, err = m.DB.AddNewContact(contact, user_id)
+		if err != nil {
+			m.App.Session.Put(r.Context(), "error", "can't insert new contact into database")
+			http.Redirect(w, r, "/contacts", http.StatusTemporaryRedirect)
+			return
+		}
+		m.App.Session.Put(r.Context(), "flash", "Added new contact into database")
+		http.Redirect(w, r, "/contacts", http.StatusSeeOther)
+		//render.Template(w, r, "contacts.page.tmpl", &models.TemplateData{})
+	}
+}
+
+// ContactViewByID handels data for one contact by thier ID
+func (m *Repository) ContactViewByID(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	var id int
+
+	cid := chi.URLParam(r, "id")
+	if cid != "" {
+		id, err = strconv.Atoi(cid) // Convert to int
+		if err != nil {
+			fmt.Println("strconv.Atoi error: ", err)
+			http.Error(w, "Invalid job listing  ID", http.StatusBadRequest)
+			return
+		}
+	}
+
+	m.App.Session.Put(r.Context(), "return_to", r.Referer())
+	returnPath := m.App.Session.PopString(r.Context(), "return_to")
+	if returnPath == "" {
+		returnPath = "/my/dashboard"
+	}
+
+	fmt.Println("Return Path: ", returnPath)
+
+	user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
+	if !ok || user_id == "" {
+		helpers.ServerError(w, errors.New("user ID not found in session"))
+		return
+	}
+
+	contact, err := m.DB.GetContactByID(id, user_id)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	data := map[string]interface{}{
+		"contact": contact,
+	}
+	// store data in session so the user can access it if they chose to edit the contact.
+	m.App.Session.Put(r.Context(), "contact", contact)
+
+	render.Template(w, r, "contact-view.page.tmpl", &models.TemplateData{
+		StringMap: map[string]string{"returnPath": returnPath},
+		Data:      data,
+		Form:      forms.New(nil),
+	})
+}
+
+// ContactVieByIDPost handels post data for ContactViewByID data
+func (m *Repository) ContactViewByIDPost(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "#", &models.TemplateData{})
+}
+
+// JobSearchManager handels the Job Search Manager dashboard
 func (m *Repository) JobSearchManager(w http.ResponseWriter, r *http.Request) {
 
-	id := (m.App.Session.Get(r.Context(), "user_id")).(string)
-	fmt.Println("running JobSearchManager, uuid: ", id)
-	listings, err := m.DB.GetAllJobListing(id)
+	user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
+	if !ok || user_id == "" {
+		helpers.ServerError(w, errors.New("user ID not found in session"))
+		return
+	}
+
+	//fmt.Println("running JobSearchManager, uuid: ", id)
+	listings, err := m.DB.GetAllJobListing(user_id)
 	if err != nil {
 		log.Println("error getting job listings from database", err)
 		m.App.Session.Put(r.Context(), "warning", "error getting job listings from the database")
@@ -462,60 +489,183 @@ func (m *Repository) JobSearchManager(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (m *Repository) JobView(w http.ResponseWriter, r *http.Request) {
-
-	id := (m.App.Session.Get(r.Context(), "user_id")).(string)
-	// fmt.Println("running JobSearchManager, uuid: ", id)
-	listings, err := m.DB.GetAllJobListing(id)
-	if err != nil {
-		log.Println("error getting job listings from database", err)
-		m.App.Session.Put(r.Context(), "warning", "error getting job listings from the database")
-		http.Redirect(w, r, "/my/dashboard", http.StatusSeeOther)
-
-	}
-
-	data := make(map[string]interface{})
-	data["listings"] = listings
-
-	render.Template(w, r, "job-search-manager.page.tmpl", &models.TemplateData{
-		Data: data,
-	})
-}
-
+// UserEditProfile handels the user profile page
 func (m *Repository) UserEditProfile(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "my-profile.page.tmpl", &models.TemplateData{})
 }
 
+// ViewResumes handels the ViewResumes page
 func (m *Repository) ViewResumes(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "my-resumes.page.tmpl", &models.TemplateData{})
 }
 
+// ViewApplications handels the ViewApplications page
 func (m *Repository) ViewApplications(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "my-applications.page.tmpl", &models.TemplateData{})
 }
 
-// User skills tracker page handler
+// SkillTracker User skills tracker page handler
 func (m *Repository) SkillTracker(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "my-skills.page.tmpl", &models.TemplateData{})
 }
 
-// User certifications tracker page handler
+// CertTracker User certifications tracker page handler
 func (m *Repository) CertTracker(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "my-certifications.page.tmpl", &models.TemplateData{})
 }
 
+// JobListingAll handels the job listings page
 func (m *Repository) JobListingAll(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "job-listing-all.page.tmpl", &models.TemplateData{})
+
+	user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
+	if !ok || user_id == "" {
+		helpers.ServerError(w, errors.New("user ID not found in session"))
+		return
+	}
+
+	listings, err := m.DB.GetAllJobListing(user_id)
+	if err != nil {
+		log.Println("error getting job listings from database", err)
+		m.App.Session.Put(r.Context(), "warning", "error getting job listings from the database")
+		http.Redirect(w, r, "/my/dashboard", http.StatusSeeOther)
+
+	}
+
+	data := make(map[string]interface{})
+	data["listings"] = listings
+
+	render.Template(w, r, "job-listing-all.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
 }
 
-func (m *Repository) JobListingNew(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "job-listing-new.page.tmpl", &models.TemplateData{})
+// JobListingEdit handels the new and edit job listings pages
+func (m *Repository) JobListingEdit(w http.ResponseWriter, r *http.Request) {
+
+	var listID int
+	var err error
+	var listing models.JobListing
+	form := forms.New(nil)
+	id := chi.URLParam(r, "id")
+	editMode := id != ""
+
+	m.App.Session.Put(r.Context(), "return_to", r.Referer())
+
+	returnPath := m.App.Session.PopString(r.Context(), "return_to")
+	if returnPath == "" {
+		returnPath = "/my/dashboard"
+	}
+
+	if id != "" {
+		listID, err = strconv.Atoi(id) // Convert to int
+		if err != nil {
+			http.Error(w, "Invalid contact ID", http.StatusBadRequest)
+			return
+		}
+	}
+
+	if editMode {
+		user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
+		if !ok || user_id == "" {
+			helpers.ServerError(w, errors.New("user ID not found in session"))
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+		listing, err = m.DB.GetJobListingByID(listID, user_id)
+		if err != nil {
+			helpers.ServerError(w, err)
+			return
+		}
+		editMode = true
+		// fmt.Println("contact.FirstName:", contact.FirstName)
+	} else {
+		listing = models.JobListing{}
+	}
+
+	stringMap := make(map[string]string)
+	data := make(map[string]interface{})
+	data["listing"] = listing
+	data["editMode"] = editMode
+	stringMap["id"] = id
+	// set edit mode
+	form.Required("company", "job_title")
+
+	render.Template(w, r, "job-listing-edit.page.tmpl", &models.TemplateData{
+		StringMap: stringMap,
+		Form:      form,
+		Data:      data,
+	})
 }
 
+// JobListingEditPost handels the new and edit job listings post data
+func (m *Repository) JobListingEditPost(w http.ResponseWriter, r *http.Request) {
+	//check if edit or new
+	//call add func
+	//call update func
+
+	//return message
+	//redirect
+
+	render.Template(w, r, "job-listing-view.page.tmpl", &models.TemplateData{})
+}
+
+// JobListingViewByID displays one joblisting by ID
 func (m *Repository) JobListingViewByID(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("JobListingViewByID Running...")
+	var listID int
+	var err error
+	var listing models.JobListing
+	lid := chi.URLParam(r, "id")
+	userID, ok := m.App.Session.Get(r.Context(), "user_id").(string)
+	if !ok || userID == "" {
+		helpers.ServerError(w, errors.New("user ID not found in session"))
+		return
+	}
+	m.App.Session.Put(r.Context(), "return_to", r.Referer())
+
+	returnPath := m.App.Session.PopString(r.Context(), "return_to")
+	if returnPath == "" {
+		returnPath = "/my/dashboard"
+	}
+	//http.Redirect(w, r, returnPath, http.StatusSeeOther)
+	log.Println("returnPath: ", returnPath)
+	log.Println("Listing ID: ", lid)
+
+	if lid != "" {
+		listID, err = strconv.Atoi(lid) // Convert to int
+		if err != nil {
+			fmt.Println("strconv.Atoi error: ", err)
+			http.Error(w, "Invalid job listing  ID", http.StatusBadRequest)
+			return
+		}
+	}
+
+	listing, err = m.DB.GetJobListingByID(listID, userID)
+	if err != nil {
+		log.Println("Error in GetJobListingByID: ", err)
+		m.App.Session.Put(r.Context(), "error", "error getting job listing from DB")
+		http.Redirect(w, r, returnPath, http.StatusSeeOther)
+	}
+
+	stringMap := make(map[string]string)
+	data := make(map[string]interface{})
+	data["listing"] = listing
+	stringMap["returnPath"] = returnPath
+	stringMap["id"] = lid
+
+	render.Template(w, r, "job-listing-view.page.tmpl", &models.TemplateData{
+		StringMap: stringMap,
+		Data:      data,
+	})
+}
+
+// JobListingViewByIDPOST displays one joblisting by ID post data
+func (m *Repository) JobListingViewByIDPost(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "job-listing-view.page.tmpl", &models.TemplateData{})
 }
 
+// AdminDashboard handels the admin dashboard
 func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "job-listing-view.page.tmpl", &models.TemplateData{})
+	render.Template(w, r, "admin.page.tmpl", &models.TemplateData{})
 }

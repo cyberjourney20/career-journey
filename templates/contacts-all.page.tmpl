@@ -17,7 +17,7 @@
           <h4 class="display-3">Contacts</h4>
         </div>
         <div class="col-md-3">
-            <button type="button" onclick="location.href='/contacts/new/contacts'"class="btn btn-outline-dark btn-fw">New Contact</button>
+            <button type="button" onclick="location.href='/contacts/new'"class="btn btn-outline-dark btn-fw">New Contact</button>
         </div>
     </div>
     <div class="row"><br>
@@ -49,7 +49,7 @@
               <td>{{.Company.CompanyName}}</td>
               <td>{{.JobTitle}}</td>
               <td>{{.Objective}}</td>
-              <td type="button" class="btn btn-inverse-primary ti-pencil"  onclick="location.href='/contacts/view/contacts/{{.ID}}'"></td>
+              <td type="button" class="btn btn-inverse-primary ti-pencil"  onclick="location.href='/contacts/view/{{.ID}}'"></td>
             </tr>
             {{end}}
           </tbody>

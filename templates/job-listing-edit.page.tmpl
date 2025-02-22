@@ -1,0 +1,241 @@
+{{template "base" .}}
+
+{{define "css"}}
+{{end}}
+
+{{define "page-title"}}
+
+{{end}}
+
+{{define "content"}}
+{{$l := index .Data "listing"}}
+{{$editMode := index .Data "editMode"}}
+{{$src := index .StringMap "src"}}
+{{$id := index .StringMap "id"}} 
+
+<div class="col-lg-12 grid-margin stretch-card">
+  <div class="card">
+    <div class="card-body">
+      
+      <form class="forms" action="/jobs/new" method="POST">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <div class="row">
+          <div class="col-md-12">
+            {{if $editMode}}
+            <h4 class="display-3">Edit Job Listing</h4>
+            {{else}}
+            <div class="row">
+            <div class="col-md-6">
+              <h4 class="display-3">Add New Job Listing</h4>
+            </div>
+
+            <div class="col-md-6">
+              <label class="col-sm-2 col-form-label">Fill with AI</label>
+              <div class="col-sm-12">
+                <div class="input-group">
+              <input type="text" name="company" class="form-control" placeholder="Paste Link to Job Description" id="company" autocomplete="off"> 
+                  <div class="input-group-append">
+              <button class="btn btn-sm btn-outline-primary" id="companyDropdown" type="button">Search</button>
+            </div></div></div>
+          </div>
+            {{end}}
+          </div> <br>
+        </div>
+
+        <p class="card-description">Company Information</p>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Company</label>
+              <div class="col-sm-10">
+                <div class="input-group">
+                  <input type="text" name="company" class="form-control" value="" id="company" autocomplete="off"> 
+                  <div class="input-group-append">
+                    <button class="btn btn-sm btn-outline-primary" id="companyDropdown" type="button">Search</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 form-group">
+            <div class="row">
+              <label class="col-sm-4 col-form-label">Industry</label>
+              <div class="col-sm-8">
+                <input type="text" name="industry" class="form-control" 
+                value="" id="industry" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 form-group">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Size</label>
+              <div class="col-sm-8">
+                <input type="text" name="email" class="form-control" 
+                value="" id="email" required autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12 form-group">
+            <div class="row">
+              <label class="col-sm-1 col-form-label">Website</label>
+              <div class="col-sm-11">
+                <input type="text" name="company_url" class="form-control" 
+                value="" id="company_url" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="card-description">Job Listing Information</p>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Job Title</label>
+              <div class="col-sm-10">
+                <input type="text" name="job_title" class="form-control" value="" id="job_title" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Job ID#</label>
+              <div class="col-sm-10">
+                <input type="text" name="external_job_id" class="form-control" value="" id="external_job_id" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-4 form-group">
+            <div class="row">
+              <label class="col-sm-3 col-form-label">Low Pay</label>
+              <div class="col-sm-9">
+                <input type="text" name="low_pay" class="form-control" 
+                value="$" id="low_pay" required autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 form-group">
+            <div class="row">
+              <label class="col-sm-3 col-form-label">High Pay</label>
+              <div class="col-sm-9">
+                <input type="text" name="high_pay" class="form-control" 
+                value="$" id="high_pay" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 form-group">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Target Pay</label>
+              <div class="col-sm-9">
+                <input type="text" name="target_pay" class="form-control" 
+                value="$" id="target_pay" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Link</label>
+              <div class="col-sm-10">
+                <input type="text" name="link" class="form-control" value="" id="link" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">City</label>
+              <div class="col-sm-9">
+                <input type="text" name="city" class="form-control" value="" id="city" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">State</label>
+              <div class="col-sm-9">
+                <input type="text" name="state" class="form-control" value="" id="state" autocomplete="off"> 
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+        <div class="col-lg-12">
+          <div class="form-group row">
+            <label class="col-sm-6 col-form-label">Required Skills</label>
+            <label class="col-sm-6 col-form-label">Required Certifications</label>
+            <div class="col-md-6">
+              <textarea type="text" name="details" 
+              class="form-control" id="details" autocomplete="off" rows="10"></textarea>
+            </div>
+        
+            
+            <div class="col-md-6">
+              <textarea type="text"  name="notes" 
+              class="form-control" id="notes" autocomplete="off" rows="10"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Job Description Summary</label>
+              <div class="col-sm-12">
+                <textarea type="text" name="description" class="form-control" id="description" autocomplete="off" rows="6"></textarea>
+              </div>
+            </div>
+            </div>
+          </div><br>
+
+          <div class="col-md-2">
+        <button type="submit" class="btn btn-primary mb-2">Submit</button>
+            </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+{{end}}
+
+{{define "js"}}
+<input type="text" id="companySearch" placeholder="Search for a company...">
+<div id="companyResults"></div>
+
+<script>
+document.getElementById("companySearch").addEventListener("input", function() {
+    let query = this.value.trim();
+    if (query.length < 2) return; // Prevent unnecessary searches
+
+    fetch(`/api/search-companies?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            let resultsDiv = document.getElementById("companyResults");
+            resultsDiv.innerHTML = ""; // Clear previous results
+
+            data.forEach(company => {
+                let div = document.createElement("div");
+                div.textContent = company.name;
+                div.onclick = function() {
+                    document.getElementById("companySearch").value = company.name;
+                    resultsDiv.innerHTML = ""; // Hide results after selection
+                };
+                resultsDiv.appendChild(div);
+            });
+        })
+        .catch(error => console.error("Error fetching companies:", error));
+});
+</script>
+{{end}}

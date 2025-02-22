@@ -17,6 +17,7 @@ type DatabaseRepo interface {
 	AddNewUser(u models.User) error
 	UserExists(email string) (bool, error)
 	GetAllJobListing(uuid string) ([]models.JobListing, error)
+	GetJobListingByID(id int, uuid string) (models.JobListing, error)
 
 	// May not need this here if it is never called from outside of postgres.go
 	//or moveit to helpers.go ? it dosnt interact with the DB, Just builds a JSON for it.
