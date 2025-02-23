@@ -23,3 +23,8 @@ type DatabaseRepo interface {
 	//or moveit to helpers.go ? it dosnt interact with the DB, Just builds a JSON for it.
 	//TimeLineBuilderJSON(t time.Time, s string) string
 }
+
+type LLMRepo interface {
+	JobListingPrompt(jobDescription string) string
+	OllamaGenerateResponse(prompt string, stream bool) (string, error)
+}

@@ -15,6 +15,7 @@ import (
 	"github.com/cyberjourney20/career-journey/internal/render"
 	"github.com/cyberjourney20/career-journey/internal/repository"
 	"github.com/cyberjourney20/career-journey/internal/repository/dbrepo"
+	"github.com/cyberjourney20/career-journey/internal/repository/llmrepo"
 	"github.com/go-chi/chi"
 )
 
@@ -25,6 +26,7 @@ var Repo *Repository
 type Repository struct {
 	App *config.AppConfig
 	DB  repository.DatabaseRepo
+	LLM repository.LLMRepo
 }
 
 // NewRepo creates a new repository
@@ -32,6 +34,7 @@ func NewRepo(a *config.AppConfig, db *driver.DB) *Repository {
 	return &Repository{
 		App: a,
 		DB:  dbrepo.NewPostgresRepo(db.SQL, a),
+		LLM: llmrepo.NewOllamaRepo(a),
 	}
 }
 
@@ -667,5 +670,89 @@ func (m *Repository) JobListingViewByIDPost(w http.ResponseWriter, r *http.Reque
 
 // AdminDashboard handels the admin dashboard
 func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "admin.page.tmpl", &models.TemplateData{})
+	render.Template(w, r, "job-listing-edit.page.tmpl", &models.TemplateData{})
 }
+
+func (m *Repository) JobListingLLM(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("JobListingLLM Handler Started")
+
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println("Error parsing form:", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
+
+	jobDescription := r.FormValue("paste_description")
+	//fmt.Println("Received Job Description:", jobDescription)
+
+	if jobDescription == "" {
+		fmt.Println("Error: Job description is empty!")
+		http.Error(w, "Job description is required", http.StatusBadRequest)
+		return
+	}
+
+	systemPrompt := m.LLM.JobListingPrompt(jobDescription)
+
+	// ---- Use the exact same working function from the standalone test ----
+	response, err := m.LLM.OllamaGenerateResponse(systemPrompt, false)
+	if err != nil {
+		fmt.Println("Error calling Ollama:", err)
+		http.Error(w, "Error processing AI request", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("LLM Response:", response)
+	w.Write([]byte(response))
+}
+
+// func (m *Repository) JobListingLLM(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Println("Running JobListingLLM")
+// 	ollama := driver.NewOllamaDriverNoStream()
+
+// 	err := r.ParseForm()
+// 	if err != nil {
+// 		fmt.Println("Error parsing form:", err)
+// 		http.Error(w, "Error parsing form", http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	jobDescription := r.Form.Get("paste_description")
+// 	fmt.Println("Received Job Description:", jobDescription)
+
+// 	if jobDescription == "" {
+// 		fmt.Println("Error: Job description is empty!")
+// 		http.Error(w, "Job description is required", http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	prompt := m.LLM.JobListingPrompt(jobDescription)
+
+// 	response, err := ollama.OllamaGenerateResponse(prompt)
+// 	if err != nil {
+// 		log.Println("Error calling LLM:", err)
+// 		http.Error(w, "Error processing AI request", http.StatusInternalServerError)
+// 	} else {
+// 		log.Println("LLM Response:", response)
+// 	}
+
+// jsonData, err := json.MarshalIndent(response, "", "  ")
+// if err != nil {
+// 	fmt.Println("Error formatting JSON:", err)
+// 	return
+// }
+// fmt.Println(string(jsonData))
+
+//render.Template(w, r, "job-listing-edit.page.tmpl", &models.TemplateData{})
+//}
+
+// LLM Usage
+
+// ollama := NewOllamaDriver()
+// prompt := fmt.Sprintf("%s\n\nUser Input:\n%s", llm.JobListingPrompt(jobDescription), userPrompt)
+// response, err := ollama.GenerateResponse(prompt)
+// if err != nil {
+//     log.Println("Error calling LLM:", err)
+// } else {
+//     log.Println("LLM Response:", response)
+// }

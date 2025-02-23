@@ -200,7 +200,25 @@
           <div class="col-md-2">
         <button type="submit" class="btn btn-primary mb-2">Submit</button>
             </div>
-      </form>
+          </form>
+
+
+          <form action="/jobs/new/llm" method="POST">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group row">
+                  <label class="col-sm-2 col-form-label">Fill With AI Paste Test</label>
+                  <div class="col-sm-12">
+                    <textarea type="text" name="paste_description" class="form-control" id="paste_description" autocomplete="off" rows="30"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div><br>
+              <div class="col-md-2">
+                <button type="submit" class="btn btn-primary mb-2">AI Paste</button>
+              </div> 
+          </form>
 
     </div>
   </div>

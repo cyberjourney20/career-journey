@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/cyberjourney20/career-journey/internal/config"
@@ -44,6 +45,7 @@ func routes(app *config.AppConfig) http.Handler {
 		mux.Get("/search-manager", handlers.Repo.JobSearchManager)
 		mux.Get("/listings", handlers.Repo.JobListingAll)
 		mux.Get("/new", handlers.Repo.JobListingEdit)
+		mux.Post("/new/llm", handlers.Repo.JobListingLLM)
 		mux.Post("/new", handlers.Repo.JobListingEditPost)
 		mux.Get("/view/{id}", handlers.Repo.JobListingViewByID)
 		mux.Post("/view/{id}", handlers.Repo.JobListingViewByIDPost)
@@ -80,6 +82,10 @@ func routes(app *config.AppConfig) http.Handler {
 
 	userFileServer := http.FileServer(http.Dir("./users_files/"))
 	mux.Handle("/users_files/*", http.StripPrefix("/users_files", userFileServer))
+
+	for _, r := range mux.Routes() {
+		log.Println("Registered route:", r.Pattern)
+	}
 
 	return mux
 }
