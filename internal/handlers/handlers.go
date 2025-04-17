@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/cyberjourney20/career-journey/internal/config"
 	"github.com/cyberjourney20/career-journey/internal/driver"
@@ -552,7 +554,7 @@ func (m *Repository) JobListingEdit(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	editMode := id != ""
 
-	m.App.Session.Put(r.Context(), "return_to", r.Referer())
+	m.App.Session.Put(r.Context(), "return_to", r.Referer()) // need to handle bad return addressess like llm or just stor the first one?
 
 	returnPath := m.App.Session.PopString(r.Context(), "return_to")
 	if returnPath == "" {
@@ -568,19 +570,22 @@ func (m *Repository) JobListingEdit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if editMode {
-		user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
-		if !ok || user_id == "" {
-			helpers.ServerError(w, errors.New("user ID not found in session"))
-			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-			return
+		sessionListing, ok := m.App.Session.Get(r.Context(), "listing").(models.JobListing)
+		if !ok {
+			listing = sessionListing
+		} else {
+			user_id, ok := m.App.Session.Get(r.Context(), "user_id").(string)
+			if !ok {
+				helpers.ServerError(w, errors.New("user ID not found in session"))
+				return
+			}
+			listing, err = m.DB.GetJobListingByID(listID, user_id)
+			if err != nil {
+				log.Println("Error retrieving job listing:", err)
+				http.Redirect(w, r, "/jobs", http.StatusSeeOther)
+				return
+			}
 		}
-		listing, err = m.DB.GetJobListingByID(listID, user_id)
-		if err != nil {
-			helpers.ServerError(w, err)
-			return
-		}
-		editMode = true
-		// fmt.Println("contact.FirstName:", contact.FirstName)
 	} else {
 		listing = models.JobListing{}
 	}
@@ -702,8 +707,29 @@ func (m *Repository) JobListingLLM(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("LLM Response:", response)
-	w.Write([]byte(response))
+	jsonStart := strings.Index(response, "{")
+	if jsonStart == -1 {
+		fmt.Println("Error: No JSON found in LLM response")
+		fmt.Println("Raw LLM Response:", response)
+		return
+	}
+
+	// Extract only the JSON part
+
+	cleanResponse := response[jsonStart:]
+	trimResponse := strings.Trim(cleanResponse, "`")
+
+	fmt.Println("Clean JSON Response:", trimResponse) // Debugging
+
+	// Now try parsing only the valid JSON
+	var newListing models.JobListing
+	if err := json.Unmarshal([]byte(trimResponse), &newListing); err != nil {
+		fmt.Println("Error while decoding the data:", err.Error())
+		return
+	}
+	m.App.Session.Put(r.Context(), "listing", newListing)
+	m.App.Session.Put(r.Context(), "flash", "Job Listing Populated. Please validate the data and select submit")
+	http.Redirect(w, r, "/jobs/edit/0", http.StatusSeeOther)
 }
 
 // func (m *Repository) JobListingLLM(w http.ResponseWriter, r *http.Request) {

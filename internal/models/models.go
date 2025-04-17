@@ -59,20 +59,20 @@ type Application struct {
 
 type JobListing struct {
 	ID             int
-	ExternalID     string
-	CompanyID      int
-	URL            string
-	JobTitle       string
-	JobDescription string
-	WorkSetting    int
-	ReqYOE         int
-	ReqSkills      []ReferenceSkills
-	ReqCerts       []ReferenceCerts
-	LowPay         string
-	HighPay        string
-	TargetPay      string
-	Location       Location
-	Company        Company
+	ExternalID     string            `json:"job_id"`
+	CompanyID      int               `json:"company_id"`
+	URL            string            `json:"url"`
+	JobTitle       string            `json:"job_title"`
+	JobDescription string            `json:"job_description"`
+	WorkSetting    int               `json:"work_setting"`
+	ReqYOE         int               `json:"req_yoe"`
+	ReqSkills      []ReferenceSkills `json:"req_skills"`
+	ReqCerts       []ReferenceCerts  `json:"req_certs"`
+	LowPay         string            `json:"low_pay"`
+	HighPay        string            `json:"high_pay"`
+	TargetPay      string            `json:"target_pay"`
+	Location       Location          `json:"location"`
+	Company        Company           `json:"company"`
 	Posted         time.Time
 	Closes         time.Time
 	CreatedAt      time.Time
@@ -81,7 +81,7 @@ type JobListing struct {
 
 type Company struct {
 	ID          int
-	CompanyName string
+	CompanyName string `json:"company_name"`
 	URL         string
 	Address     Location
 	Industry    string
@@ -92,9 +92,9 @@ type Company struct {
 
 type Location struct {
 	ID      int
-	City    string
-	State   string
-	Country string
+	City    string `json:"city"`
+	State   string `json:"state"`
+	Country string `json:"country"`
 	Zip     string
 }
 
